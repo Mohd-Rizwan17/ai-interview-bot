@@ -4,6 +4,7 @@ import { env } from "../config/env.js";
 import { User } from "../models/User.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { closeRunningInterview } from "../services/interviewService.js";
 import {
   clearSessionCookie,
   hasActiveSession,
@@ -76,10 +77,11 @@ export const logout = asyncHandler(async (req, res) => {
   if (token) {
     try {
       const payload = jwt.verify(token, env.jwtSecret);
-      await User.updateOne(
+      const result = await User.updateOne(
         { _id: payload.sub, "activeSession.sessionId": payload.sid },
         { $unset: { activeSession: "" } },
       );
+      if (result.modifiedCount > 0) await closeRunningInterview(payload.sub);
     } catch {
       // invalid or expired token: there is no session to end
     }

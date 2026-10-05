@@ -2,6 +2,7 @@ import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { env } from "../config/env.js";
 import { getDeviceName } from "../utils/deviceInfo.js";
+import { closeRunningInterview } from "./interviewService.js";
 
 const isProduction = env.nodeEnv === "production";
 
@@ -30,6 +31,8 @@ export const isCurrentDevice = (user, req) => {
 };
 
 export const startSession = async (user, req, res) => {
+  await closeRunningInterview(user._id);
+
   const sessionId = crypto.randomUUID();
   const token = jwt.sign({ sub: user.id, sid: sessionId }, env.jwtSecret, {
     expiresIn: env.jwtExpiresIn,
