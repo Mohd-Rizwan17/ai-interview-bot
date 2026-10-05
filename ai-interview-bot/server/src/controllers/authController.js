@@ -7,6 +7,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import {
   clearSessionCookie,
   hasActiveSession,
+  isCurrentDevice,
   startSession,
 } from "../services/sessionService.js";
 
@@ -29,7 +30,7 @@ export const login = asyncHandler(async (req, res) => {
     user && (await bcrypt.compare(req.body.password, user.passwordHash));
   if (!isMatch) throw new ApiError(401, "Invalid email or password");
 
-  if (hasActiveSession(user)) {
+  if (hasActiveSession(user) && !isCurrentDevice(user, req)) {
     const confirmToken = jwt.sign(
       { sub: user.id, purpose: "login-confirm" },
       env.jwtSecret,

@@ -15,6 +15,20 @@ export const hasActiveSession = (user) =>
   Boolean(user.activeSession?.sessionId) &&
   user.activeSession.expiresAt > new Date();
 
+export const isCurrentDevice = (user, req) => {
+  const token = req.cookies.token;
+  if (!token) return false;
+
+  try {
+    const payload = jwt.verify(token, env.jwtSecret);
+    return (
+      payload.sub === user.id && payload.sid === user.activeSession?.sessionId
+    );
+  } catch {
+    return false;
+  }
+};
+
 export const startSession = async (user, req, res) => {
   const sessionId = crypto.randomUUID();
   const token = jwt.sign({ sub: user.id, sid: sessionId }, env.jwtSecret, {
