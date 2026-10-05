@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import { env } from "./config/env.js";
+import authRoutes from "./routes/authRoutes.js";
 import { notFound, errorHandler } from "./middlewares/errorHandler.js";
 
 const app = express();
@@ -15,6 +16,8 @@ app.use(cookieParser());
 app.get("/api/health", (req, res) => {
   res.json({ success: true, message: "Server is running" });
 });
+
+app.use("/api/auth", authRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

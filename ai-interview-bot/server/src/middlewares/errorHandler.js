@@ -30,5 +30,9 @@ export const errorHandler = (err, req, res, next) => {
     if (env.nodeEnv === "production") message = "Something went wrong";
   }
 
-  res.status(statusCode).json({ success: false, message });
+  res.status(statusCode).json({
+    success: false,
+    message,
+    ...(err.errorCode && { code: err.errorCode }),
+  });
 };
