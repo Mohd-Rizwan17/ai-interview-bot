@@ -34,3 +34,29 @@ export const createInterviewRules = [
 export const interviewIdRule = [
   param("id").isMongoId().withMessage("Invalid interview id"),
 ];
+
+const answerFields = [
+  body("answer")
+    .optional()
+    .isString()
+    .withMessage("Answer must be text")
+    .bail()
+    .isLength({ max: 5000 })
+    .withMessage("Answer is too long"),
+  body("skipped")
+    .optional()
+    .isBoolean()
+    .withMessage("skipped must be true or false")
+    .toBoolean(),
+];
+
+export const answerRules = [
+  ...answerFields,
+  body("selectedOption")
+    .optional()
+    .isInt({ min: 0, max: 3 })
+    .withMessage("Invalid option")
+    .toInt(),
+];
+
+export const followUpRules = answerFields;

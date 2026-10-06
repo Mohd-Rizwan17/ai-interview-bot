@@ -2,6 +2,12 @@ import { TYPES_WITH_FIELD } from "../constants/interview.js";
 import { Attempt } from "../models/Attempt.js";
 import { Interview } from "../models/Interview.js";
 import {
+  askNextQuestion,
+  revealHint,
+  submitAnswer,
+  submitFollowUp,
+} from "../services/interviewFlowService.js";
+import {
   buildSummary,
   closeRunningInterview,
   endInterview,
@@ -17,6 +23,11 @@ const findOwnedInterview = async (req) => {
   });
   if (!interview) throw new ApiError(404, "Interview not found");
   return interview;
+};
+
+const assertInProgress = (interview) => {
+  if (interview.status !== "in_progress")
+    throw new ApiError(409, "Interview has already ended");
 };
 
 export const createInterview = asyncHandler(async (req, res) => {
@@ -63,7 +74,8 @@ export const getInterview = asyncHandler(async (req, res) => {
   }
 
   const query = Attempt.find({ interview: interview._id }).sort({ order: 1 });
-  if (interview.status !== "in_progress") query.select("+correctOption");
+  if (interview.status !== "in_progress")
+    query.select("+correctOption +idealAnswer");
   const attempts = await query;
 
   res.json({
@@ -86,8 +98,7 @@ export const reportCheating = asyncHandler(async (req, res) => {
 
 export const finishInterview = asyncHandler(async (req, res) => {
   const interview = await findOwnedInterview(req);
-  if (interview.status !== "in_progress")
-    throw new ApiError(409, "Interview has already ended");
+  assertInProgress(interview);
 
   const latest = await refreshProgress(interview);
   if (latest.answeredQuestions < latest.totalQuestions) {
@@ -98,4 +109,36 @@ export const finishInterview = asyncHandler(async (req, res) => {
   if (!completed) throw new ApiError(409, "Interview has already ended");
 
   res.json({ success: true, interview: completed });
+});
+
+export const askQuestion = asyncHandler(async (req, res) => {
+  const interview = await findOwnedInterview(req);
+  assertInProgress(interview);
+
+  const result = await askNextQuestion(interview);
+  res.json({ success: true, ...result });
+});
+
+export const answerQuestion = asyncHandler(async (req, res) => {
+  const interview = await findOwnedInterview(req);
+  assertInProgress(interview);
+
+  const result = await submitAnswer(interview, req.body);
+  res.json({ success: true, ...result });
+});
+
+export const answerFollowUp = asyncHandler(async (req, res) => {
+  const interview = await findOwnedInterview(req);
+  assertInProgress(interview);
+
+  const result = await submitFollowUp(interview, req.body);
+  res.json({ success: true, ...result });
+});
+
+export const getHint = asyncHandler(async (req, res) => {
+  const interview = await findOwnedInterview(req);
+  assertInProgress(interview);
+
+  const result = await revealHint(interview);
+  res.json({ success: true, ...result });
 });

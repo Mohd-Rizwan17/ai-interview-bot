@@ -8,6 +8,7 @@ import {
 const followUpSchema = new mongoose.Schema(
   {
     question: { type: String, required: true },
+    askedAt: { type: Date, default: Date.now },
     answer: String,
     feedback: String,
   },
@@ -28,6 +29,8 @@ const attemptSchema = new mongoose.Schema(
     question: { type: String, required: true },
     options: [String],
     correctOption: { type: Number, select: false },
+    idealAnswer: { type: String, select: false },
+    hint: { type: String, select: false },
     timeLimitSec: { type: Number, required: true, min: 10 },
     askedAt: { type: Date, default: Date.now },
     status: { type: String, enum: ATTEMPT_STATUSES, default: "asked" },
@@ -40,7 +43,6 @@ const attemptSchema = new mongoose.Schema(
     score: { type: Number, default: 0, min: 0 },
     hintUsed: { type: Boolean, default: false },
     feedback: String,
-    idealAnswer: String,
     followUps: {
       type: [followUpSchema],
       validate: {
