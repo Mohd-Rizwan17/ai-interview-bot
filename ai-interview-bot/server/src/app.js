@@ -13,6 +13,10 @@ app.use(helmet());
 app.use(cors({ origin: env.clientUrl, credentials: true }));
 app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
+app.use((req, res, next) => {
+  req.body ??= {};
+  next();
+});
 
 app.get("/api/health", (req, res) => {
   res.json({ success: true, message: "Server is running" });
