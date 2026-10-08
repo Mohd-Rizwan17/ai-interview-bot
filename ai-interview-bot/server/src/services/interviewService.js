@@ -1,3 +1,8 @@
+import {
+  MAX_SCORE_BY_FORMAT,
+  ROUND_TITLES,
+  TIME_LIMIT_BY_FORMAT,
+} from "../constants/interview.js";
 import { Attempt } from "../models/Attempt.js";
 import { Interview } from "../models/Interview.js";
 
@@ -50,3 +55,28 @@ export const buildSummary = (interview, attempts) => ({
   ).length,
   cheatingFlags: interview.cheatingFlags,
 });
+
+export const buildTitle = (keys) =>
+  keys.map((key) => ROUND_TITLES[key]).join(" + ");
+
+export const buildRounds = (keys, questionsByRound) =>
+  keys.map((key, index) => {
+    const questions = questionsByRound[key];
+
+    return {
+      key,
+      title: ROUND_TITLES[key],
+      order: index + 1,
+      status: index === 0 ? "in_progress" : "locked",
+      startedAt: index === 0 ? new Date() : undefined,
+      timeLimitSec: questions.reduce(
+        (sum, question) => sum + TIME_LIMIT_BY_FORMAT[question.format],
+        0,
+      ),
+      totalQuestions: questions.length,
+      totalMarks: questions.reduce(
+        (sum, question) => sum + MAX_SCORE_BY_FORMAT[question.format],
+        0,
+      ),
+    };
+  });
