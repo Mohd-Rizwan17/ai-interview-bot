@@ -55,3 +55,7 @@ export const answerRules = [
 export const hintRules = [
   body("attemptId").isMongoId().withMessage("Invalid question id"),
 ];
+
+export const roundRules = [
+  body("roundKey").isIn(INTERVIEW_ROUNDS).withMessage("Invalid round"),
+];

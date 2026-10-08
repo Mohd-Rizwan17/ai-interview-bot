@@ -49,12 +49,26 @@ export const buildSummary = (interview, attempts) => ({
   totalMarks: interview.totalMarks,
   obtainedMarks: interview.obtainedMarks,
   right: attempts.filter((attempt) => attempt.isCorrect === true).length,
-  wrong: attempts.filter((attempt) => attempt.isCorrect === false).length,
-  unanswered: attempts.filter(
-    (a) => a.status === "timed_out" || a.status === "skipped",
+  wrong: attempts.filter(
+    (attempt) => attempt.status === "answered" && attempt.isCorrect === false,
   ).length,
+  unanswered: attempts.filter((attempt) => attempt.status !== "answered")
+    .length,
   cheatingFlags: interview.cheatingFlags,
 });
+
+export const toClientInterview = (interview) => {
+  const data = interview.toObject();
+
+  if (data.status === "in_progress") {
+    delete data.obtainedMarks;
+    data.rounds.forEach((round) => {
+      delete round.obtainedMarks;
+    });
+  }
+
+  return data;
+};
 
 export const buildTitle = (keys) =>
   keys.map((key) => ROUND_TITLES[key]).join(" + ");

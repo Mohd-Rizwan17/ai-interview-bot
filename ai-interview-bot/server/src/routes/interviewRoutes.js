@@ -8,6 +8,7 @@ import {
   getRound,
   listInterviews,
   reportCheating,
+  submitRound,
 } from "../controllers/interviewController.js";
 import { protect } from "../middlewares/auth.js";
 import { validate } from "../middlewares/validate.js";
@@ -16,6 +17,7 @@ import {
   createInterviewRules,
   hintRules,
   interviewIdRule,
+  roundRules,
 } from "../validators/interviewValidators.js";
 
 const router = Router();
@@ -35,6 +37,19 @@ router.post(
   answerQuestion,
 );
 router.post("/:id/hint", interviewIdRule, hintRules, validate, getHint);
-router.post("/:id/finish", interviewIdRule, validate, finishInterview);
+router.post(
+  "/:id/round/submit",
+  interviewIdRule,
+  roundRules,
+  validate,
+  submitRound,
+);
+router.post(
+  "/:id/finish",
+  interviewIdRule,
+  roundRules,
+  validate,
+  finishInterview,
+);
 
 export default router;

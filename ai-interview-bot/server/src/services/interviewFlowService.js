@@ -1,7 +1,9 @@
 import { GRACE_SEC, HINT_PENALTY } from "../constants/interview.js";
 import { Attempt } from "../models/Attempt.js";
+import { Interview } from "../models/Interview.js";
 import { ApiError } from "../utils/ApiError.js";
-import { refreshProgress } from "./interviewService.js";
+import { refreshProgress, toClientInterview } from "./interviewService.js";
+import { gradeRound } from "./scoreService.js";
 
 const elapsedSec = (round) => (Date.now() - round.startedAt.getTime()) / 1000;
 
@@ -149,4 +151,95 @@ export const revealHint = async (interview, { attemptId }) => {
     hint: attempt.hint,
     penalty: HINT_PENALTY,
   };
+};
+
+const finishRound = async (interview, closingStatus) => {
+  const index = interview.currentRoundIndex;
+  const round = interview.rounds[index];
+  const isLast = index === interview.rounds.length - 1;
+
+  await gradeRound(interview._id, round.key, closingStatus);
+
+  const attempts = await Attempt.find({
+    interview: interview._id,
+    roundKey: round.key,
+  }).select("status score");
+
+  const now = new Date();
+  const changes = {
+    [`rounds.${index}.status`]: "completed",
+    [`rounds.${index}.completedAt`]: now,
+    [`rounds.${index}.answeredQuestions`]: attempts.filter(
+      (attempt) => attempt.status === "answered",
+    ).length,
+    [`rounds.${index}.obtainedMarks`]: attempts.reduce(
+      (sum, attempt) => sum + attempt.score,
+      0,
+    ),
+  };
+
+  if (isLast) {
+    changes.status = "completed";
+    changes.endedAt = now;
+    changes.finalSubmittedAt = now;
+  } else {
+    changes.currentRoundIndex = index + 1;
+    changes[`rounds.${index + 1}.status`] = "in_progress";
+    changes[`rounds.${index + 1}.startedAt`] = now;
+  }
+
+  const updated = await Interview.findOneAndUpdate(
+    {
+      _id: interview._id,
+      status: "in_progress",
+      currentRoundIndex: index,
+      [`rounds.${index}.status`]: "in_progress",
+    },
+    { $set: changes },
+    { returnDocument: "after" },
+  );
+
+  if (!updated) {
+    throw new ApiError(409, "This round was already submitted");
+  }
+
+  return refreshProgress(updated);
+};
+
+export const expireRoundIfNeeded = async (interview) => {
+  if (interview.status !== "in_progress") return interview;
+
+  const round = interview.rounds[interview.currentRoundIndex];
+
+  if (round?.status !== "in_progress") return interview;
+  if (elapsedSec(round) <= round.timeLimitSec + GRACE_SEC) return interview;
+
+  try {
+    await finishRound(interview, "timed_out");
+  } catch (error) {
+    if (error.statusCode !== 409) throw error;
+  }
+
+  return Interview.findById(interview._id);
+};
+
+export const completeRound = async (interview, { roundKey, final }) => {
+  const round = getActiveRound(interview);
+  const isLast = interview.currentRoundIndex === interview.rounds.length - 1;
+
+  if (round.key !== roundKey) {
+    throw new ApiError(409, "This round was already submitted");
+  }
+
+  if (final && !isLast) {
+    throw new ApiError(400, "Final submit is only for the last round");
+  }
+
+  if (!final && isLast) {
+    throw new ApiError(400, "This is the last round. Use final submit");
+  }
+
+  const updated = await finishRound(interview, "skipped");
+
+  return { interview: toClientInterview(updated) };
 };
