@@ -12,7 +12,7 @@ export const authLimiter = rateLimit({
   handler: tooManyRequests,
 });
 
-export const aiLimiter = rateLimit({
+export const interviewLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 120,
   keyGenerator: (req) => req.user.id,

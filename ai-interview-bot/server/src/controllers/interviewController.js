@@ -1,11 +1,9 @@
-import { TYPES_WITH_FIELD } from "../constants/interview.js";
 import { Attempt } from "../models/Attempt.js";
 import { Interview } from "../models/Interview.js";
 import {
   askNextQuestion,
   revealHint,
   submitAnswer,
-  submitFollowUp,
 } from "../services/interviewFlowService.js";
 import {
   buildSummary,
@@ -21,32 +19,40 @@ const findOwnedInterview = async (req) => {
     _id: req.params.id,
     user: req.user._id,
   });
+
   if (!interview) throw new ApiError(404, "Interview not found");
+
   return interview;
 };
 
 const assertInProgress = (interview) => {
-  if (interview.status !== "in_progress")
+  if (interview.status !== "in_progress") {
     throw new ApiError(409, "Interview has already ended");
+  }
 };
 
 export const createInterview = asyncHandler(async (req, res) => {
-  const { company, type, field, difficulty, totalQuestions } = req.body;
+  const { title, difficulty, rounds } = req.body;
+
   await closeRunningInterview(req.user._id);
 
   try {
     const interview = await Interview.create({
       user: req.user._id,
-      company,
-      type,
-      field: TYPES_WITH_FIELD.includes(type) ? field : undefined,
+      title,
       difficulty,
-      totalQuestions,
+      rounds,
     });
-    res.status(201).json({ success: true, interview });
+
+    res.status(201).json({
+      success: true,
+      interview,
+    });
   } catch (error) {
-    if (error.code === 11000)
+    if (error.code === 11000) {
       throw new ApiError(409, "An interview is already in progress");
+    }
+
     throw error;
   }
 });
@@ -54,6 +60,7 @@ export const createInterview = asyncHandler(async (req, res) => {
 export const listInterviews = asyncHandler(async (req, res) => {
   const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
   const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), 50);
+
   const filter = { user: req.user._id };
 
   const [interviews, total] = await Promise.all([
@@ -64,18 +71,30 @@ export const listInterviews = asyncHandler(async (req, res) => {
     Interview.countDocuments(filter),
   ]);
 
-  res.json({ success: true, interviews, page, limit, total });
+  res.json({
+    success: true,
+    interviews,
+    page,
+    limit,
+    total,
+  });
 });
 
 export const getInterview = asyncHandler(async (req, res) => {
   const interview = await findOwnedInterview(req);
+
   if (interview.status === "incomplete") {
     throw new ApiError(403, "Incomplete interviews cannot be opened");
   }
 
-  const query = Attempt.find({ interview: interview._id }).sort({ order: 1 });
-  if (interview.status !== "in_progress")
-    query.select("+correctOption +idealAnswer");
+  const query = Attempt.find({
+    interview: interview._id,
+  }).sort({ order: 1 });
+
+  if (interview.status !== "in_progress") {
+    query.select("+correctOption +idealAnswer +hint");
+  }
+
   const attempts = await query;
 
   res.json({
@@ -88,57 +107,79 @@ export const getInterview = asyncHandler(async (req, res) => {
 
 export const reportCheating = asyncHandler(async (req, res) => {
   const interview = await findOwnedInterview(req);
+
   const ended = await endInterview(interview._id, "ended_cheating", {
     $inc: { cheatingFlags: 1 },
   });
-  if (!ended) throw new ApiError(409, "Interview has already ended");
 
-  res.json({ success: true, interview: ended });
+  if (!ended) {
+    throw new ApiError(409, "Interview has already ended");
+  }
+
+  res.json({
+    success: true,
+    interview: ended,
+  });
 });
 
 export const finishInterview = asyncHandler(async (req, res) => {
   const interview = await findOwnedInterview(req);
+
   assertInProgress(interview);
 
   const latest = await refreshProgress(interview);
+
   if (latest.answeredQuestions < latest.totalQuestions) {
     throw new ApiError(400, "Answer all questions before finishing");
   }
 
   const completed = await endInterview(interview._id, "completed");
-  if (!completed) throw new ApiError(409, "Interview has already ended");
 
-  res.json({ success: true, interview: completed });
+  if (!completed) {
+    throw new ApiError(409, "Interview has already ended");
+  }
+
+  res.json({
+    success: true,
+    interview: completed,
+  });
 });
 
 export const askQuestion = asyncHandler(async (req, res) => {
   const interview = await findOwnedInterview(req);
+
   assertInProgress(interview);
 
   const result = await askNextQuestion(interview);
-  res.json({ success: true, ...result });
+
+  res.json({
+    success: true,
+    ...result,
+  });
 });
 
 export const answerQuestion = asyncHandler(async (req, res) => {
   const interview = await findOwnedInterview(req);
+
   assertInProgress(interview);
 
   const result = await submitAnswer(interview, req.body);
-  res.json({ success: true, ...result });
-});
 
-export const answerFollowUp = asyncHandler(async (req, res) => {
-  const interview = await findOwnedInterview(req);
-  assertInProgress(interview);
-
-  const result = await submitFollowUp(interview, req.body);
-  res.json({ success: true, ...result });
+  res.json({
+    success: true,
+    ...result,
+  });
 });
 
 export const getHint = asyncHandler(async (req, res) => {
   const interview = await findOwnedInterview(req);
+
   assertInProgress(interview);
 
   const result = await revealHint(interview);
-  res.json({ success: true, ...result });
+
+  res.json({
+    success: true,
+    ...result,
+  });
 });

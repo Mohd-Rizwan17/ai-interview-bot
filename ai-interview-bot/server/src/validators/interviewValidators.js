@@ -1,9 +1,9 @@
 import { body, param } from "express-validator";
 import {
   DIFFICULTIES,
-  FIELDS,
-  INTERVIEW_TYPES,
-  TYPES_WITH_FIELD,
+  // FIELDS,
+  // INTERVIEW_TYPES,
+  // TYPES_WITH_FIELD,
 } from "../constants/interview.js";
 
 export const createInterviewRules = [
@@ -14,13 +14,13 @@ export const createInterviewRules = [
     .trim()
     .isLength({ min: 2, max: 80 })
     .withMessage("Company must be 2 to 80 characters"),
-  body("type")
-    .isIn(INTERVIEW_TYPES)
-    .withMessage("Choose a valid interview type"),
-  body("field")
-    .if(body("type").isIn(TYPES_WITH_FIELD))
-    .isIn(FIELDS)
-    .withMessage("Choose a valid field"),
+  // body("type")
+    // .isIn(INTERVIEW_TYPES)
+    // .withMessage("Choose a valid interview type"),
+  // body("field")
+    // .if(body("type").isIn(TYPES_WITH_FIELD))
+    // .isIn(FIELDS)
+    // .withMessage("Choose a valid field"),
   body("difficulty")
     .isIn(DIFFICULTIES)
     .withMessage("Choose a valid difficulty"),

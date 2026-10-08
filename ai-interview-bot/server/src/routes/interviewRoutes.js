@@ -1,6 +1,6 @@
 import { Router } from "express";
 import {
-  answerFollowUp,
+  // answerFollowUp,
   answerQuestion,
   askQuestion,
   createInterview,
@@ -11,7 +11,7 @@ import {
   reportCheating,
 } from "../controllers/interviewController.js";
 import { protect } from "../middlewares/auth.js";
-import { aiLimiter } from "../middlewares/rateLimit.js";
+import { interviewLimiter } from "../middlewares/rateLimit.js";
 import { validate } from "../middlewares/validate.js";
 import {
   answerRules,
@@ -28,10 +28,16 @@ router.post("/", createInterviewRules, validate, createInterview);
 router.get("/", listInterviews);
 router.get("/:id", interviewIdRule, validate, getInterview);
 router.post("/:id/cheat", interviewIdRule, validate, reportCheating);
-router.post("/:id/next", aiLimiter, interviewIdRule, validate, askQuestion);
+router.post(
+  "/:id/next",
+  interviewLimiter,
+  interviewIdRule,
+  validate,
+  askQuestion,
+);
 router.post(
   "/:id/answers",
-  aiLimiter,
+  interviewLimiter,
   interviewIdRule,
   answerRules,
   validate,
@@ -39,11 +45,11 @@ router.post(
 );
 router.post(
   "/:id/followups",
-  aiLimiter,
+  interviewLimiter,
   interviewIdRule,
   followUpRules,
   validate,
-  answerFollowUp,
+  // answerFollowUp,
 );
 router.post("/:id/hint", interviewIdRule, validate, getHint);
 router.post("/:id/finish", interviewIdRule, validate, finishInterview);

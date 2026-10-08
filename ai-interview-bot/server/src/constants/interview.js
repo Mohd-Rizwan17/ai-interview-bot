@@ -1,13 +1,45 @@
-export const INTERVIEW_TYPES = [
-  "technical",
+export const INTERVIEW_ROUNDS = [
   "aptitude",
   "reasoning",
+  "dsa",
+  "javascript",
+  "react",
+  "html-css",
+  "nodejs",
+  "express",
+  "mongodb",
+  "frontend",
+  "backend",
   "hr",
-  "mixed",
+  "my-questions",
 ];
-export const TYPES_WITH_FIELD = ["technical", "mixed"];
-export const FIELDS = ["full-stack", "frontend", "backend"];
+
+export const ALL_ROUNDS = [
+  "aptitude",
+  "reasoning",
+  "dsa",
+  "frontend",
+  "backend",
+];
+
+export const ROUND_TITLES = {
+  aptitude: "Aptitude",
+  reasoning: "Reasoning",
+  dsa: "DSA",
+  javascript: "JavaScript",
+  react: "React",
+  "html-css": "HTML/CSS",
+  nodejs: "Node.js",
+  express: "Express",
+  mongodb: "MongoDB",
+  frontend: "Frontend",
+  backend: "Backend",
+  hr: "HR",
+  "my-questions": "My Questions",
+};
+
 export const DIFFICULTIES = ["easy", "medium", "hard"];
+
 export const INTERVIEW_STATUSES = [
   "in_progress",
   "completed",
@@ -16,19 +48,23 @@ export const INTERVIEW_STATUSES = [
 ];
 
 export const QUESTION_FORMATS = ["mcq", "practical", "descriptive"];
-export const QUESTION_SOURCES = ["ai", "pdf"];
+
 export const ATTEMPT_STATUSES = ["asked", "answered", "timed_out", "skipped"];
 
+export const MAX_SCORE_BY_FORMAT = {
+  mcq: 2,
+  descriptive: 3,
+  practical: 5,
+};
 
-
-export const MAX_SCORE_BY_FORMAT = { mcq: 2, descriptive: 3, practical: 5 };
 export const TIME_LIMIT_BY_FORMAT = {
   mcq: 60,
   descriptive: 120,
   practical: 300,
 };
-export const FOLLOW_UP_TIME_LIMIT_SEC = 90;
-export const MAX_FOLLOW_UPS = 2;
+
 export const HINT_PENALTY = 1;
+
 export const CORRECT_THRESHOLD = 0.6;
+
 export const GRACE_SEC = 5;
