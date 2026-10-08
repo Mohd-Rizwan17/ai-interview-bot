@@ -5,7 +5,7 @@ import {
   pickQuestions,
 } from "../services/questionPlannerService.js";
 import {
-  askNextQuestion,
+  getCurrentRound,
   revealHint,
   submitAnswer,
 } from "../services/interviewFlowService.js";
@@ -170,12 +170,12 @@ export const finishInterview = asyncHandler(async (req, res) => {
   });
 });
 
-export const askQuestion = asyncHandler(async (req, res) => {
+export const getRound = asyncHandler(async (req, res) => {
   const interview = await findOwnedInterview(req);
 
   assertInProgress(interview);
 
-  const result = await askNextQuestion(interview);
+  const result = await getCurrentRound(interview);
 
   res.json({
     success: true,
@@ -201,7 +201,7 @@ export const getHint = asyncHandler(async (req, res) => {
 
   assertInProgress(interview);
 
-  const result = await revealHint(interview);
+  const result = await revealHint(interview, req.body);
 
   res.json({
     success: true,

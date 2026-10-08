@@ -1,214 +1,152 @@
-import {
-  GRACE_SEC,
-  HINT_PENALTY,
-  MAX_SCORE_BY_FORMAT,
-  TIME_LIMIT_BY_FORMAT,
-} from "../constants/interview.js";
-
+import { GRACE_SEC, HINT_PENALTY } from "../constants/interview.js";
 import { Attempt } from "../models/Attempt.js";
 import { ApiError } from "../utils/ApiError.js";
 import { refreshProgress } from "./interviewService.js";
 
-const secondsSince = (date) => (Date.now() - date.getTime()) / 1000;
+const elapsedSec = (round) => (Date.now() - round.startedAt.getTime()) / 1000;
 
-const hasExpired = (startedAt, limitSec) =>
-  secondsSince(startedAt) > limitSec + GRACE_SEC;
+const secondsLeft = (round) =>
+  Math.max(0, Math.ceil(round.timeLimitSec - elapsedSec(round)));
 
-const secondsLeft = (startedAt, limitSec) =>
-  Math.max(0, Math.ceil(limitSec - secondsSince(startedAt)));
+const getActiveRound = (interview) => {
+  const round = interview.rounds[interview.currentRoundIndex];
+
+  if (!round || round.status !== "in_progress") {
+    throw new ApiError(409, "No round is in progress");
+  }
+
+  return round;
+};
+
+const assertRoundOpen = (round) => {
+  if (elapsedSec(round) > round.timeLimitSec + GRACE_SEC) {
+    throw new ApiError(409, "Time is up for this round");
+  }
+};
+
+const findRoundAttempt = async (interview, round, attemptId, select) => {
+  const query = Attempt.findOne({
+    _id: attemptId,
+    interview: interview._id,
+    roundKey: round.key,
+  });
+
+  if (select) query.select(select);
+
+  const attempt = await query;
+
+  if (!attempt) {
+    throw new ApiError(404, "Question not found in the current round");
+  }
+
+  return attempt;
+};
 
 const toClientQuestion = (attempt) => ({
   id: attempt._id,
   order: attempt.order,
+  roundOrder: attempt.roundOrder,
   format: attempt.format,
   topic: attempt.topic,
   question: attempt.question,
   options: attempt.options,
   maxScore: attempt.maxScore,
+  status: attempt.status,
+  selectedOption: attempt.selectedOption,
+  userAnswer: attempt.userAnswer,
   hintUsed: attempt.hintUsed,
-  timeLimitSec: attempt.timeLimitSec,
-  secondsLeft: secondsLeft(attempt.askedAt, attempt.timeLimitSec),
+  hint: attempt.hintUsed ? attempt.hint : undefined,
 });
 
-const applyScore = (attempt, score) => {
-  attempt.score = attempt.hintUsed ? Math.max(0, score - HINT_PENALTY) : score;
+export const getCurrentRound = async (interview) => {
+  const round = getActiveRound(interview);
 
-  attempt.isCorrect = score === attempt.maxScore;
+  const attempts = await Attempt.find({
+    interview: interview._id,
+    roundKey: round.key,
+  })
+    .select("+hint")
+    .sort({ roundOrder: 1 });
+
+  return {
+    round: {
+      key: round.key,
+      title: round.title,
+      order: round.order,
+      totalRounds: interview.rounds.length,
+      isLastRound: round.order === interview.rounds.length,
+      timeLimitSec: round.timeLimitSec,
+      secondsLeft: secondsLeft(round),
+      totalQuestions: round.totalQuestions,
+    },
+    questions: attempts.map(toClientQuestion),
+  };
 };
 
-const buildClaim = (attempt, { answer, selectedOption, skipped }) => {
+export const submitAnswer = async (
+  interview,
+  { attemptId, answer, selectedOption, skipped },
+) => {
+  const round = getActiveRound(interview);
+  assertRoundOpen(round);
+
+  const attempt = await findRoundAttempt(interview, round, attemptId);
   const isMcq = attempt.format === "mcq";
   const text = answer?.trim();
 
-  const hasAnswer = isMcq ? Number.isInteger(selectedOption) : Boolean(text);
-
-  let status = "answered";
-
-  if (hasExpired(attempt.askedAt, attempt.timeLimitSec)) {
-    status = "timed_out";
-  } else if (skipped || !hasAnswer) {
-    status = "skipped";
+  if (isMcq && selectedOption >= attempt.options.length) {
+    throw new ApiError(400, "Invalid option");
   }
 
-  const fields = {
-    status,
+  const answered =
+    !skipped && (isMcq ? Number.isInteger(selectedOption) : Boolean(text));
+
+  const $set = {
+    status: answered ? "answered" : "skipped",
     answeredAt: new Date(),
-    timeTakenSec: Math.round(secondsSince(attempt.askedAt)),
   };
+  const $unset = {};
 
-  if (status === "answered") {
-    if (isMcq) {
-      fields.selectedOption = selectedOption;
-    } else {
-      fields.userAnswer = text;
-    }
-  }
+  if (answered && isMcq) $set.selectedOption = selectedOption;
+  else $unset.selectedOption = "";
 
-  return fields;
-};
+  if (answered && !isMcq) $set.userAnswer = text;
+  else $unset.userAnswer = "";
 
-export const askNextQuestion = async (interview) => {
-  const open = await Attempt.findOne({
-    interview: interview._id,
-    status: "asked",
-  }).sort({ order: 1 });
+  await Attempt.updateOne({ _id: attempt._id }, { $set, $unset });
 
-  if (open) {
-    if (!hasExpired(open.askedAt, open.timeLimitSec)) {
-      return {
-        question: toClientQuestion(open),
-        totalQuestions: interview.totalQuestions,
-      };
-    }
-
-    await Attempt.updateOne(
-      {
-        _id: open._id,
-        status: "asked",
-      },
-      {
-        $set: {
-          status: "timed_out",
-          answeredAt: new Date(),
-          timeTakenSec: Math.round(secondsSince(open.askedAt)),
-          score: 0,
-          isCorrect: false,
-        },
-      },
-    );
-  }
-
-  const answeredCount = await Attempt.countDocuments({
-    interview: interview._id,
-    status: { $in: ["answered", "timed_out", "skipped"] },
-  });
-
-  if (answeredCount >= interview.totalQuestions) {
-    throw new ApiError(400, "All questions are done. Finish the interview");
-  }
-
-  throw new ApiError(501, "Question planner is not connected yet");
-};
-
-export const submitAnswer = async (interview, input) => {
-  const open = await Attempt.findOne({
-    interview: interview._id,
-    status: "asked",
-  }).select("+correctOption +idealAnswer");
-
-  if (!open) {
-    throw new ApiError(409, "There is no open question");
-  }
-
-  const claim = await Attempt.updateOne(
-    {
-      _id: open._id,
-      status: "asked",
-    },
-    {
-      $set: buildClaim(open, input),
-    },
-  );
-
-  if (claim.modifiedCount === 0) {
-    throw new ApiError(409, "This question was already answered");
-  }
-
-  const answered = await Attempt.findById(open._id).select(
-    "+correctOption +idealAnswer",
-  );
-
-  if (answered.status !== "answered") {
-    answered.score = 0;
-    answered.isCorrect = false;
-    answered.feedback =
-      answered.status === "timed_out"
-        ? "Time is up for this question."
-        : "You skipped this question.";
-  } else if (answered.format === "mcq") {
-    const correct = answered.selectedOption === answered.correctOption;
-
-    answered.isCorrect = correct;
-    answered.score = correct ? answered.maxScore : 0;
-  } else {
-    answered.isCorrect = null;
-    answered.score = 0;
-    answered.feedback = "Answer submitted for review.";
-  }
-
-  if (answered.hintUsed) {
-    answered.score = Math.max(0, answered.score - HINT_PENALTY);
-  }
-
-  await answered.save();
-
-  const updatedInterview = await refreshProgress(interview);
+  const [updated, done] = await Promise.all([
+    refreshProgress(interview),
+    Attempt.countDocuments({
+      interview: interview._id,
+      roundKey: round.key,
+      status: { $in: ["answered", "skipped"] },
+    }),
+  ]);
 
   return {
-    attempt: {
-      id: answered._id,
-      status: answered.status,
-      isCorrect: undefined,
-      score: undefined,
-      maxScore: answered.maxScore,
-      feedback: undefined,
-    },
-    progress: {
-      answeredQuestions: updatedInterview.answeredQuestions,
-      totalQuestions: updatedInterview.totalQuestions,
-      progressPercent: updatedInterview.progressPercent,
-      obtainedMarks: updatedInterview.obtainedMarks,
-      totalMarks: updatedInterview.totalMarks,
-    },
-    canFinish:
-      updatedInterview.answeredQuestions >= updatedInterview.totalQuestions,
+    attempt: { id: attempt._id, status: $set.status },
+    roundProgress: { done, total: round.totalQuestions },
+    progressPercent: updated.progressPercent,
   };
 };
 
-export const revealHint = async (interview) => {
-  const open = await Attempt.findOne({
-    interview: interview._id,
-    status: "asked",
-  }).select("+hint");
+export const revealHint = async (interview, { attemptId }) => {
+  const round = getActiveRound(interview);
+  assertRoundOpen(round);
 
-  if (!open) {
-    throw new ApiError(409, "There is no open question");
-  }
+  const attempt = await findRoundAttempt(interview, round, attemptId, "+hint");
 
-  if (hasExpired(open.askedAt, open.timeLimitSec)) {
-    throw new ApiError(409, "Time is up for this question");
-  }
-
-  if (!open.hint) {
+  if (!attempt.hint) {
     throw new ApiError(404, "No hint is available for this question");
   }
 
-  if (!open.hintUsed) {
-    await Attempt.updateOne({ _id: open._id }, { $set: { hintUsed: true } });
+  if (!attempt.hintUsed) {
+    await Attempt.updateOne({ _id: attempt._id }, { $set: { hintUsed: true } });
   }
 
   return {
-    hint: open.hint,
+    hint: attempt.hint,
     penalty: HINT_PENALTY,
   };
 };

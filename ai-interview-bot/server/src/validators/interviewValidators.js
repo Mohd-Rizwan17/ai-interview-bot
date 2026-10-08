@@ -43,6 +43,7 @@ const answerFields = [
 ];
 
 export const answerRules = [
+  body("attemptId").isMongoId().withMessage("Invalid question id"),
   ...answerFields,
   body("selectedOption")
     .optional()
@@ -51,4 +52,6 @@ export const answerRules = [
     .toInt(),
 ];
 
-export const followUpRules = answerFields;
+export const hintRules = [
+  body("attemptId").isMongoId().withMessage("Invalid question id"),
+];
