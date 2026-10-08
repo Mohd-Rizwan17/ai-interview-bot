@@ -24,9 +24,9 @@ export const refreshProgress = async (interview) => {
     "status score maxScore",
   );
 
-  const answered = attempts.filter(
-    (attempt) => attempt.status !== "asked",
-  ).length;
+    const answered = attempts.filter(
+      (attempt) => !["pending", "asked"].includes(attempt.status),
+    ).length;
   const obtained = attempts.reduce((sum, attempt) => sum + attempt.score, 0);
   const total = attempts.reduce((sum, attempt) => sum + attempt.maxScore, 0);
 

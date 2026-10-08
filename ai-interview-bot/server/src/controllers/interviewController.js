@@ -1,12 +1,18 @@
 import { Attempt } from "../models/Attempt.js";
 import { Interview } from "../models/Interview.js";
 import {
+  buildAttempts,
+  pickQuestions,
+} from "../services/questionPlannerService.js";
+import {
   askNextQuestion,
   revealHint,
   submitAnswer,
 } from "../services/interviewFlowService.js";
 import {
+  buildRounds,
   buildSummary,
+  buildTitle,
   closeRunningInterview,
   endInterview,
   refreshProgress,
@@ -32,21 +38,26 @@ const assertInProgress = (interview) => {
 };
 
 export const createInterview = asyncHandler(async (req, res) => {
-  const { title, difficulty, rounds } = req.body;
+  const { difficulty, rounds: keys } = req.body;
+
+  const questionsByRound = pickQuestions(keys, difficulty);
+  const rounds = buildRounds(keys, questionsByRound);
 
   await closeRunningInterview(req.user._id);
 
+  let interview;
+
   try {
-    const interview = await Interview.create({
+    interview = await Interview.create({
       user: req.user._id,
-      title,
+      title: buildTitle(keys),
       difficulty,
       rounds,
-    });
-
-    res.status(201).json({
-      success: true,
-      interview,
+      totalQuestions: rounds.reduce(
+        (sum, round) => sum + round.totalQuestions,
+        0,
+      ),
+      totalMarks: rounds.reduce((sum, round) => sum + round.totalMarks, 0),
     });
   } catch (error) {
     if (error.code === 11000) {
@@ -55,6 +66,20 @@ export const createInterview = asyncHandler(async (req, res) => {
 
     throw error;
   }
+
+  try {
+    await Attempt.insertMany(
+      buildAttempts(interview._id, keys, questionsByRound),
+    );
+  } catch (error) {
+    await Interview.deleteOne({ _id: interview._id });
+    throw error;
+  }
+
+  res.status(201).json({
+    success: true,
+    interview,
+  });
 });
 
 export const listInterviews = asyncHandler(async (req, res) => {
