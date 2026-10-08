@@ -1,0 +1,69 @@
+import {
+  MAX_SCORE_BY_FORMAT,
+  QUESTIONS_PER_ROUND,
+  ROUND_TITLES,
+  TIME_LIMIT_BY_FORMAT,
+} from "../constants/interview.js";
+import { QUESTION_BANK } from "../questionBank/index.js";
+import { ApiError } from "../utils/ApiError.js";
+
+const shuffle = (items) => {
+  const copy = [...items];
+
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+
+  return copy;
+};
+
+const pickForRound = (key, difficulty) => {
+  const bank = QUESTION_BANK[key];
+
+  if (!bank?.length) {
+    throw new ApiError(
+      501,
+      `${ROUND_TITLES[key]} questions are not available yet`,
+    );
+  }
+
+  const matching = shuffle(bank.filter((q) => q.difficulty === difficulty));
+  const others = shuffle(bank.filter((q) => q.difficulty !== difficulty));
+
+  return [...matching, ...others].slice(0, QUESTIONS_PER_ROUND);
+};
+
+export const pickQuestions = (keys, difficulty) =>
+  Object.fromEntries(keys.map((key) => [key, pickForRound(key, difficulty)]));
+
+export const buildAttempts = (interviewId, keys, questionsByRound) => {
+  const attempts = [];
+  let order = 0;
+
+  keys.forEach((key) => {
+    questionsByRound[key].forEach((question, index) => {
+      order += 1;
+
+      attempts.push({
+        interview: interviewId,
+        roundKey: key,
+        order,
+        roundOrder: index + 1,
+        format: question.format,
+        topic: question.topic,
+        question: question.question,
+        options: question.options,
+        correctOption: question.correctOption,
+        idealAnswer: question.idealAnswer,
+        explanation: question.explanation,
+        hint: question.hint,
+        keywords: question.keywords,
+        timeLimitSec: TIME_LIMIT_BY_FORMAT[question.format],
+        maxScore: MAX_SCORE_BY_FORMAT[question.format],
+      });
+    });
+  });
+
+  return attempts;
+};

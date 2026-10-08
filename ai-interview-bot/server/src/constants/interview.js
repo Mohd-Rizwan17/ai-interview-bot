@@ -49,7 +49,13 @@ export const INTERVIEW_STATUSES = [
 
 export const QUESTION_FORMATS = ["mcq", "practical", "descriptive"];
 
-export const ATTEMPT_STATUSES = ["asked", "answered", "timed_out", "skipped"];
+export const ATTEMPT_STATUSES = [
+  "pending",
+  "asked",
+  "answered",
+  "timed_out",
+  "skipped",
+];
 
 export const MAX_SCORE_BY_FORMAT = {
   mcq: 2,
@@ -66,5 +72,7 @@ export const TIME_LIMIT_BY_FORMAT = {
 export const HINT_PENALTY = 1;
 
 export const CORRECT_THRESHOLD = 0.6;
+
+export const QUESTIONS_PER_ROUND = 10;
 
 export const GRACE_SEC = 5;

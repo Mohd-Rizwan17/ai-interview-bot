@@ -82,7 +82,7 @@ const attemptSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ATTEMPT_STATUSES,
-      default: "asked",
+      default: "pending",
     },
 
     userAnswer: {
@@ -117,9 +117,9 @@ const attemptSchema = new mongoose.Schema(
       min: 0,
     },
 
-    hintUsed: {
-      type: Boolean,
-      default: false,
+    keywords: {
+      type: [[String]],
+      select: false,
     },
 
     feedback: String,
