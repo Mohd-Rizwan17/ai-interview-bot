@@ -4,6 +4,7 @@ import {
   ROUND_TITLES,
   TIME_LIMIT_BY_FORMAT,
 } from "../constants/interview.js";
+import { CustomQuestion } from "../models/CustomQuestion.js";
 import { QUESTION_BANK } from "../questionBank/index.js";
 import { ApiError } from "../utils/ApiError.js";
 
@@ -34,8 +35,36 @@ const pickForRound = (key, difficulty) => {
   return [...matching, ...others].slice(0, QUESTIONS_PER_ROUND);
 };
 
-export const pickQuestions = (keys, difficulty) =>
-  Object.fromEntries(keys.map((key) => [key, pickForRound(key, difficulty)]));
+const pickCustomQuestions = async (userId) => {
+  const saved = await CustomQuestion.find({ user: userId }).lean();
+
+  if (saved.length === 0) {
+    throw new ApiError(
+      400,
+      "Add your own questions before starting the My Questions round",
+    );
+  }
+
+  return shuffle(saved)
+    .slice(0, QUESTIONS_PER_ROUND)
+    .map((question) => ({
+      ...question,
+      keywords: question.keywords.map((keyword) => [keyword]),
+    }));
+};
+
+export const pickQuestions = async (keys, difficulty, userId) => {
+  const entries = await Promise.all(
+    keys.map(async (key) => [
+      key,
+      key === "my-questions"
+        ? await pickCustomQuestions(userId)
+        : pickForRound(key, difficulty),
+    ]),
+  );
+
+  return Object.fromEntries(entries);
+};
 
 export const buildAttempts = (interviewId, keys, questionsByRound) => {
   const attempts = [];

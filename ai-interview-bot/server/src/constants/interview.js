@@ -75,4 +75,6 @@ export const CORRECT_THRESHOLD = 0.6;
 
 export const QUESTIONS_PER_ROUND = 10;
 
+export const MAX_CUSTOM_QUESTIONS = 50;
+
 export const GRACE_SEC = 5;
