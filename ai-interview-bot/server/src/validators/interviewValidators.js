@@ -1,34 +1,26 @@
 import { body, param } from "express-validator";
 import {
+  ALL_ROUNDS,
   DIFFICULTIES,
-  // FIELDS,
-  // INTERVIEW_TYPES,
-  // TYPES_WITH_FIELD,
+  INTERVIEW_ROUNDS,
 } from "../constants/interview.js";
 
 export const createInterviewRules = [
-  body("company")
-    .isString()
-    .withMessage("Company is required")
-    .bail()
-    .trim()
-    .isLength({ min: 2, max: 80 })
-    .withMessage("Company must be 2 to 80 characters"),
-  // body("type")
-    // .isIn(INTERVIEW_TYPES)
-    // .withMessage("Choose a valid interview type"),
-  // body("field")
-    // .if(body("type").isIn(TYPES_WITH_FIELD))
-    // .isIn(FIELDS)
-    // .withMessage("Choose a valid field"),
   body("difficulty")
     .isIn(DIFFICULTIES)
     .withMessage("Choose a valid difficulty"),
-  body("totalQuestions")
-    .optional()
-    .isInt({ min: 5, max: 30 })
-    .withMessage("Questions must be between 5 and 30")
-    .toInt(),
+  body("rounds")
+    .isArray({ min: 1, max: 20 })
+    .withMessage("Select at least one round")
+    .bail()
+    .customSanitizer((rounds) => {
+      const expanded = rounds.flatMap((key) =>
+        key === "all" ? ALL_ROUNDS : [key],
+      );
+      return [...new Set(expanded)];
+    })
+    .custom((rounds) => rounds.every((key) => INTERVIEW_ROUNDS.includes(key)))
+    .withMessage("Choose valid rounds"),
 ];
 
 export const interviewIdRule = [
