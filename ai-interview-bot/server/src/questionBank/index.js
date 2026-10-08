@@ -1,5 +1,10 @@
+import { htmlCss } from "./htmlCss.js";
 import { javascript } from "./javascript.js";
+import { react } from "./react.js";
 
 export const QUESTION_BANK = {
-  react: javascript, javascript
+  javascript,
+  react,
+  "html-css": htmlCss,
+  frontend: [...javascript, ...react, ...htmlCss],
 };
