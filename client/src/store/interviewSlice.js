@@ -23,7 +23,9 @@ export const fetchRound = createAsyncThunk(
   async (interviewId, { rejectWithValue }) => {
     try {
       const { data } = await api.get(`/interviews/${interviewId}/round`);
-      return { round: data.round, questions: data.questions };
+      const endsAt = Date.now() + data.round.secondsLeft * 1000;
+
+      return { round: { ...data.round, endsAt }, questions: data.questions };
     } catch (error) {
       return rejectWithValue(toRejection(error));
     }
@@ -45,6 +47,19 @@ export const submitAnswer = createAsyncThunk(
   },
 );
 
+export const submitRound = createAsyncThunk(
+  "interview/submitRound",
+  async ({ interviewId, roundKey, isFinal }, { rejectWithValue }) => {
+    const path = isFinal ? "finish" : "round/submit";
+
+    try {
+      await api.post(`/interviews/${interviewId}/${path}`, { roundKey });
+    } catch (error) {
+      return rejectWithValue(toRejection(error));
+    }
+  },
+);
+
 const initialState = {
   status: "idle",
   error: null,
@@ -52,8 +67,11 @@ const initialState = {
   questions: [],
   roomError: null,
   roomEnded: false,
+  roomFinished: false,
   answerStatus: "idle",
   answerError: null,
+  submitStatus: "idle",
+  submitError: null,
 };
 
 const interviewSlice = createSlice({
@@ -68,8 +86,11 @@ const interviewSlice = createSlice({
       state.questions = [];
       state.roomError = null;
       state.roomEnded = false;
+      state.roomFinished = false;
       state.answerStatus = "idle";
       state.answerError = null;
+      state.submitStatus = "idle";
+      state.submitError = null;
     },
   },
   extraReducers: (builder) => {
@@ -91,6 +112,7 @@ const interviewSlice = createSlice({
       .addCase(fetchRound.fulfilled, (state, action) => {
         state.round = action.payload.round;
         state.questions = action.payload.questions;
+        state.submitError = null;
       })
       .addCase(fetchRound.rejected, (state, action) => {
         if (action.payload?.code === "INTERVIEW_ENDED") {
@@ -127,6 +149,25 @@ const interviewSlice = createSlice({
         }
 
         state.answerError = action.payload?.message ?? "Something went wrong";
+      })
+      .addCase(submitRound.pending, (state) => {
+        state.submitStatus = "loading";
+        state.submitError = null;
+      })
+      .addCase(submitRound.fulfilled, (state, action) => {
+        state.submitStatus = "idle";
+
+        if (action.meta.arg.isFinal) state.roomFinished = true;
+      })
+      .addCase(submitRound.rejected, (state, action) => {
+        state.submitStatus = "idle";
+
+        if (action.payload?.code === "INTERVIEW_ENDED") {
+          state.roomEnded = true;
+          return;
+        }
+
+        state.submitError = action.payload?.message ?? "Something went wrong";
       });
   },
 });

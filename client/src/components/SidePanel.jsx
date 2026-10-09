@@ -1,4 +1,13 @@
-const SidePanel = ({ round, questions, activeId, onSelect }) => {
+import Timer from "./Timer.jsx";
+
+const SidePanel = ({
+  round,
+  questions,
+  activeId,
+  secondsLeft,
+  onSelect,
+  children,
+}) => {
   const answered = questions.filter(
     (question) => question.status === "answered",
   ).length;
@@ -7,11 +16,13 @@ const SidePanel = ({ round, questions, activeId, onSelect }) => {
     : 0;
 
   return (
-    <aside className="border-b border-line bg-panel p-4 lg:w-64 lg:shrink-0 lg:overflow-y-auto lg:border-b-0 lg:border-r">
+    <aside className="flex flex-col border-b border-line bg-panel p-4 lg:w-64 lg:shrink-0 lg:overflow-y-auto lg:border-b-0 lg:border-r">
       <p className="text-xs uppercase tracking-wide text-muted">
         Round {round.order} of {round.totalRounds}
       </p>
       <h2 className="mt-1 text-xl font-semibold">{round.title}</h2>
+
+      <Timer secondsLeft={secondsLeft} />
 
       <ol className="mt-4 flex flex-wrap gap-2 lg:flex-col lg:gap-1">
         {questions.map((question, index) => {
@@ -59,6 +70,8 @@ const SidePanel = ({ round, questions, activeId, onSelect }) => {
           />
         </div>
       </div>
+
+      <div className="mt-auto pt-6">{children}</div>
     </aside>
   );
 };

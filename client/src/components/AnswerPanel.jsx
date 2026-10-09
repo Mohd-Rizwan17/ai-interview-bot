@@ -2,7 +2,7 @@ import { useState } from "react";
 import CodeAnswerBox from "./CodeAnswerBox.jsx";
 import McqOptions from "./McqOptions.jsx";
 
-const AnswerPanel = ({ question, isSubmitting, error, onSubmit }) => {
+const AnswerPanel = ({ question, disabled, isSubmitting, error, onSubmit }) => {
   const isMcq = question.format === "mcq";
   const [option, setOption] = useState(question.selectedOption ?? null);
   const [text, setText] = useState(question.userAnswer ?? "");
@@ -14,15 +14,17 @@ const AnswerPanel = ({ question, isSubmitting, error, onSubmit }) => {
 
   return (
     <section className="flex flex-col gap-4 p-6">
-      {isMcq ? (
-        <McqOptions
-          options={question.options}
-          selected={option}
-          onSelect={setOption}
-        />
-      ) : (
-        <CodeAnswerBox value={text} onChange={setText} />
-      )}
+      <fieldset disabled={disabled} className="min-w-0 disabled:opacity-60">
+        {isMcq ? (
+          <McqOptions
+            options={question.options}
+            selected={option}
+            onSelect={setOption}
+          />
+        ) : (
+          <CodeAnswerBox value={text} onChange={setText} />
+        )}
+      </fieldset>
 
       {error && (
         <p role="alert" className="text-sm text-danger">
@@ -34,7 +36,7 @@ const AnswerPanel = ({ question, isSubmitting, error, onSubmit }) => {
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={!canSubmit || isSubmitting}
+          disabled={disabled || !canSubmit || isSubmitting}
           className="rounded-md bg-accent px-6 py-2 font-semibold text-ground disabled:opacity-60"
         >
           {isSubmitting ? "Submitting..." : "Submit"}
