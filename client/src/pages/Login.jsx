@@ -1,16 +1,27 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, Navigate } from "react-router";
-import { cancelConflict, confirmLogin, loginUser } from "../store/authSlice.js";
+import {
+  cancelConflict,
+  clearAuthError,
+  confirmLogin,
+  loginUser,
+} from "../store/authSlice.js";
 
 const inputClass =
   "w-full rounded-md border border-line bg-ground px-3 py-2 text-ink placeholder:text-muted";
 
 const Login = () => {
   const dispatch = useDispatch();
-  const { user, status, error, conflict } = useSelector((state) => state.auth);
+  const { user, status, error, conflict, sessionEnded } = useSelector(
+    (state) => state.auth,
+  );
   const [form, setForm] = useState({ email: "", password: "" });
   const isLoading = status === "loading";
+
+  useEffect(() => {
+    dispatch(clearAuthError());
+  }, [dispatch]);
 
   if (user) return <Navigate to="/" replace />;
 
@@ -69,6 +80,15 @@ const Login = () => {
       >
         <h1 className="text-2xl font-semibold">Welcome back</h1>
         <p className="mt-1 text-sm text-muted">Login to continue practising.</p>
+
+        {sessionEnded && (
+          <p
+            role="status"
+            className="mt-4 rounded-md border border-warn px-3 py-2 text-sm text-warn"
+          >
+            You were logged out because your account was used on another device.
+          </p>
+        )}
 
         <label htmlFor="email" className="mt-6 block text-sm text-muted">
           Email
