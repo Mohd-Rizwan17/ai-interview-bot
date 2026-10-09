@@ -5,21 +5,15 @@ import {
   TIME_LIMIT_BY_FORMAT,
 } from "../constants/interview.js";
 import { CustomQuestion } from "../models/CustomQuestion.js";
-import { QUESTION_BANK } from "../questionBank/index.js";
+import { GENERATORS, QUESTION_BANK } from "../questionBank/index.js";
 import { ApiError } from "../utils/ApiError.js";
-
-const shuffle = (items) => {
-  const copy = [...items];
-
-  for (let i = copy.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-
-  return copy;
-};
+import { shuffle } from "../utils/random.js";
 
 const pickForRound = (key, difficulty) => {
+  const generator = GENERATORS[key];
+
+  if (generator) return generator(difficulty, QUESTIONS_PER_ROUND);
+
   const bank = QUESTION_BANK[key];
 
   if (!bank?.length) {

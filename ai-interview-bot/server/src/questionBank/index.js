@@ -1,5 +1,7 @@
 import { dsa } from "./dsa.js";
 import { express } from "./express.js";
+import { generateAptitude } from "./generators/aptitude.js";
+import { generateReasoning } from "./generators/reasoning.js";
 import { hr } from "./hr.js";
 import { htmlCss } from "./htmlCss.js";
 import { javascript } from "./javascript.js";
@@ -18,4 +20,9 @@ export const QUESTION_BANK = {
   mongodb,
   backend: [...nodejs, ...express, ...mongodb],
   hr,
+};
+
+export const GENERATORS = {
+  aptitude: generateAptitude,
+  reasoning: generateReasoning,
 };
