@@ -5,20 +5,42 @@ import AnswerPanel from "../components/AnswerPanel.jsx";
 import HintBox from "../components/HintBox.jsx";
 import Notice from "../components/Notice.jsx";
 import QuestionPanel from "../components/QuestionPanel.jsx";
+import RoomBanner from "../components/RoomBanner.jsx";
 import RoundSubmit from "../components/RoundSubmit.jsx";
 import SidePanel from "../components/SidePanel.jsx";
-import useAntiCheat from "../hooks/useAntiCheat.js";
+import useAntiCheat, { CHEAT_AWAY_MS } from "../hooks/useAntiCheat.js";
 import useTimer from "../hooks/useTimer.js";
 import {
   fetchHint,
   fetchRound,
   reportCheat,
+  reportRefresh,
   resetRoom,
   submitAnswer,
   submitRound,
 } from "../store/interviewSlice.js";
 
 const POLL_MS = 2000;
+
+let reloadChecked = false;
+
+const isReloadOfThisPage = () => {
+  if (reloadChecked) return false;
+
+  reloadChecked = true;
+
+  const [entry] = performance.getEntriesByType("navigation");
+
+  return (
+    entry?.type === "reload" &&
+    new URL(entry.name).pathname === window.location.pathname
+  );
+};
+
+const refreshMessage = ({ penaltyMarks }) =>
+  penaltyMarks > 0
+    ? `Page refreshed again. ${penaltyMarks} mark${penaltyMarks > 1 ? "s" : ""} will be deducted from your score.`
+    : "Page refreshed. Refreshing again will deduct marks from your score.";
 
 const InterviewRoom = () => {
   const { id } = useParams();
@@ -36,6 +58,8 @@ const InterviewRoom = () => {
     submitError,
   } = useSelector((state) => state.interview);
   const [activeId, setActiveId] = useState(null);
+  const [awaySeconds, setAwaySeconds] = useState(null);
+  const [refreshInfo, setRefreshInfo] = useState(null);
   const secondsLeft = useTimer(round?.endsAt);
   const isTimeUp = round?.secondsLeft === 0 || secondsLeft === 0;
   const isRoomActive =
@@ -43,7 +67,20 @@ const InterviewRoom = () => {
 
   useEffect(() => {
     dispatch(resetRoom());
-    dispatch(fetchRound(id));
+
+    const load = async () => {
+      if (isReloadOfThisPage()) {
+        const result = await dispatch(reportRefresh(id));
+
+        if (reportRefresh.fulfilled.match(result)) {
+          setRefreshInfo(result.payload);
+        }
+      }
+
+      dispatch(fetchRound(id));
+    };
+
+    load();
   }, [dispatch, id]);
 
   useEffect(() => {
@@ -56,7 +93,7 @@ const InterviewRoom = () => {
 
   useAntiCheat({
     enabled: isRoomActive,
-    interviewId: id,
+    onWarn: setAwaySeconds,
     onCheat: () => dispatch(reportCheat(id)),
   });
 
@@ -118,8 +155,9 @@ const InterviewRoom = () => {
     return (
       <Notice title="Interview ended">
         <p className="text-sm text-danger">
-          You left the interview window, so this interview was ended and marked
-          with a cheating flag. Answers saved so far have been graded.
+          You stayed away from the interview window for too long, so this
+          interview was ended and marked with a cheating flag. Answers saved so
+          far have been graded.
         </p>
         <Link
           to={`/interview/${id}/review`}
@@ -182,6 +220,18 @@ const InterviewRoom = () => {
           />
         </div>
         <div className="flex-1 lg:overflow-y-auto">
+          {refreshInfo && (
+            <RoomBanner onDismiss={() => setRefreshInfo(null)}>
+              {refreshMessage(refreshInfo)}
+            </RoomBanner>
+          )}
+          {awaySeconds !== null && (
+            <RoomBanner onDismiss={() => setAwaySeconds(null)}>
+              You were away from this window for {awaySeconds} seconds. Staying
+              away for {CHEAT_AWAY_MS / 60000} minutes or more ends the
+              interview as cheating.
+            </RoomBanner>
+          )}
           {isTimeUp && (
             <p
               role="status"

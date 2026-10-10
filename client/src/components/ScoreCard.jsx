@@ -38,6 +38,14 @@ const ScoreCard = ({ interview, summary }) => {
           </div>
         ))}
       </dl>
+
+      {summary.penaltyMarks > 0 && (
+        <p className="mt-6 border-t border-line pt-4 text-sm text-warn">
+          {summary.penaltyMarks} mark{summary.penaltyMarks > 1 ? "s" : ""}{" "}
+          deducted: the page was refreshed {summary.refreshCount} time
+          {summary.refreshCount > 1 ? "s" : ""} during the interview.
+        </p>
+      )}
     </section>
   );
 };

@@ -1,28 +1,61 @@
 import { useEffect, useRef } from "react";
-import api from "../api/axios.js";
 
-const useAntiCheat = ({ enabled, interviewId, onCheat }) => {
+const WARN_AWAY_MS = 30 * 1000;
+export const CHEAT_AWAY_MS = 2 * 60 * 1000;
+
+const useAntiCheat = ({ enabled, onWarn, onCheat }) => {
+  const onWarnRef = useRef(onWarn);
   const onCheatRef = useRef(onCheat);
-  const reportedRef = useRef(false);
 
   useEffect(() => {
+    onWarnRef.current = onWarn;
     onCheatRef.current = onCheat;
-  }, [onCheat]);
+  }, [onWarn, onCheat]);
 
   useEffect(() => {
     if (!enabled) return undefined;
 
-    reportedRef.current = false;
+    let awaySince = null;
+    let cheatTimer = null;
+    let reported = false;
 
-    const report = () => {
-      if (reportedRef.current) return;
+    const reportCheat = () => {
+      if (reported) return;
 
-      reportedRef.current = true;
+      reported = true;
+      clearTimeout(cheatTimer);
       onCheatRef.current();
     };
 
+    const startAway = () => {
+      if (awaySince !== null) return;
+
+      awaySince = Date.now();
+      cheatTimer = setTimeout(reportCheat, CHEAT_AWAY_MS);
+    };
+
+    const endAway = () => {
+      if (awaySince === null) return;
+
+      const awayMs = Date.now() - awaySince;
+
+      awaySince = null;
+      clearTimeout(cheatTimer);
+
+      if (awayMs >= CHEAT_AWAY_MS) {
+        reportCheat();
+      } else if (awayMs >= WARN_AWAY_MS) {
+        onWarnRef.current(Math.round(awayMs / 1000));
+      }
+    };
+
     const handleVisibility = () => {
-      if (document.hidden) report();
+      if (document.hidden) startAway();
+      else if (document.hasFocus()) endAway();
+    };
+
+    const handleFocus = () => {
+      if (!document.hidden) endAway();
     };
 
     const handleBeforeUnload = (event) => {
@@ -30,29 +63,19 @@ const useAntiCheat = ({ enabled, interviewId, onCheat }) => {
       event.returnValue = "";
     };
 
-    const handlePageHide = () => {
-      if (reportedRef.current) return;
-
-      reportedRef.current = true;
-      fetch(`${api.defaults.baseURL}/interviews/${interviewId}/cheat`, {
-        method: "POST",
-        credentials: "include",
-        keepalive: true,
-      });
-    };
-
     document.addEventListener("visibilitychange", handleVisibility);
-    window.addEventListener("blur", report);
+    window.addEventListener("blur", startAway);
+    window.addEventListener("focus", handleFocus);
     window.addEventListener("beforeunload", handleBeforeUnload);
-    window.addEventListener("pagehide", handlePageHide);
 
     return () => {
+      clearTimeout(cheatTimer);
       document.removeEventListener("visibilitychange", handleVisibility);
-      window.removeEventListener("blur", report);
+      window.removeEventListener("blur", startAway);
+      window.removeEventListener("focus", handleFocus);
       window.removeEventListener("beforeunload", handleBeforeUnload);
-      window.removeEventListener("pagehide", handlePageHide);
     };
-  }, [enabled, interviewId]);
+  }, [enabled]);
 };
 
 export default useAntiCheat;

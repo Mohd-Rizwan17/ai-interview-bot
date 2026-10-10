@@ -85,6 +85,18 @@ export const reportCheat = createAsyncThunk(
   },
 );
 
+export const reportRefresh = createAsyncThunk(
+  "interview/reportRefresh",
+  async (interviewId, { rejectWithValue }) => {
+    try {
+      const { data } = await api.post(`/interviews/${interviewId}/refresh`);
+      return data;
+    } catch (error) {
+      return rejectWithValue(toRejection(error));
+    }
+  },
+);
+
 const initialState = {
   status: "idle",
   error: null,
@@ -219,6 +231,9 @@ const interviewSlice = createSlice({
         }
 
         state.roomError = action.payload?.message ?? "Something went wrong";
+      })
+      .addCase(reportRefresh.rejected, (state, action) => {
+        if (action.payload?.code === "INTERVIEW_ENDED") state.roomEnded = true;
       });
   },
 });
