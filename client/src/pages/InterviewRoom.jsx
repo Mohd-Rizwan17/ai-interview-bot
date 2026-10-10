@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Navigate, useParams } from "react-router";
+import { Link, Navigate, useParams } from "react-router";
 import AnswerPanel from "../components/AnswerPanel.jsx";
 import HintBox from "../components/HintBox.jsx";
 import Notice from "../components/Notice.jsx";
 import QuestionPanel from "../components/QuestionPanel.jsx";
 import RoundSubmit from "../components/RoundSubmit.jsx";
 import SidePanel from "../components/SidePanel.jsx";
+import useAntiCheat from "../hooks/useAntiCheat.js";
 import useTimer from "../hooks/useTimer.js";
 import {
   fetchHint,
   fetchRound,
+  reportCheat,
   resetRoom,
   submitAnswer,
   submitRound,
@@ -27,6 +29,7 @@ const InterviewRoom = () => {
     roomError,
     roomEnded,
     roomFinished,
+    roomCheated,
     answerStatus,
     answerError,
     submitStatus,
@@ -35,6 +38,8 @@ const InterviewRoom = () => {
   const [activeId, setActiveId] = useState(null);
   const secondsLeft = useTimer(round?.endsAt);
   const isTimeUp = round?.secondsLeft === 0 || secondsLeft === 0;
+  const isRoomActive =
+    Boolean(round) && !roomEnded && !roomFinished && !roomCheated && !roomError;
 
   useEffect(() => {
     dispatch(resetRoom());
@@ -48,6 +53,12 @@ const InterviewRoom = () => {
 
     return () => clearInterval(pollId);
   }, [dispatch, id, isTimeUp]);
+
+  useAntiCheat({
+    enabled: isRoomActive,
+    interviewId: id,
+    onCheat: () => dispatch(reportCheat(id)),
+  });
 
   const activeQuestion =
     questions.find((question) => question.id === activeId) ??
@@ -101,6 +112,24 @@ const InterviewRoom = () => {
 
   if (roomFinished || roomEnded) {
     return <Navigate to={`/interview/${id}/review`} replace />;
+  }
+
+  if (roomCheated) {
+    return (
+      <Notice title="Interview ended">
+        <p className="text-sm text-danger">
+          You left the interview window, so this interview was ended and marked
+          with a cheating flag. Answers saved so far have been graded.
+        </p>
+        <Link
+          to={`/interview/${id}/review`}
+          replace
+          className="mt-4 inline-block rounded-md bg-accent px-4 py-2 text-sm font-semibold text-ground"
+        >
+          View review
+        </Link>
+      </Notice>
+    );
   }
 
   if (roomError) {
