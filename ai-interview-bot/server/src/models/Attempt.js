@@ -71,6 +71,11 @@ const attemptSchema = new mongoose.Schema(
       select: false,
     },
 
+    hintUsed: {
+      type: Boolean,
+      default: false,
+    },
+
     timeLimitSec: {
       type: Number,
       required: true,
