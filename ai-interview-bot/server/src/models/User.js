@@ -1,4 +1,8 @@
 import mongoose from "mongoose";
+import {
+  DEFAULT_RETENTION_DAYS,
+  RETENTION_OPTIONS,
+} from "../constants/interview.js";
 
 const userSchema = new mongoose.Schema(
   {
@@ -19,6 +23,11 @@ const userSchema = new mongoose.Schema(
     },
     phone: { type: String, trim: true },
     passwordHash: { type: String, required: true, select: false },
+    historyRetentionDays: {
+      type: Number,
+      enum: RETENTION_OPTIONS,
+      default: DEFAULT_RETENTION_DAYS,
+    },
     activeSession: {
       sessionId: String,
       device: String,

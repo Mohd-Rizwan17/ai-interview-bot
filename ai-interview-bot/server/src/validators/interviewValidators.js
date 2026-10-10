@@ -1,8 +1,9 @@
-import { body, param } from "express-validator";
+import { body, param, query } from "express-validator";
 import {
   ALL_ROUNDS,
   DIFFICULTIES,
   INTERVIEW_ROUNDS,
+  RETENTION_OPTIONS,
 } from "../constants/interview.js";
 
 export const createInterviewRules = [
@@ -58,4 +59,22 @@ export const hintRules = [
 
 export const roundRules = [
   body("roundKey").isIn(INTERVIEW_ROUNDS).withMessage("Invalid round"),
+];
+
+export const listInterviewRules = [
+  query("search")
+    .optional()
+    .isString()
+    .withMessage("Search must be text")
+    .bail()
+    .isLength({ max: 50 })
+    .withMessage("Search is too long"),
+];
+
+export const retentionRules = [
+  body("days")
+    .isIn(RETENTION_OPTIONS)
+    .withMessage(`Choose one of: ${RETENTION_OPTIONS.join(", ")} days`)
+    .bail()
+    .toInt(),
 ];

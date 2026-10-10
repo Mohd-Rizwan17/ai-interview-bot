@@ -1,13 +1,16 @@
 import { Router } from "express";
 import {
   answerQuestion,
+  clearHistory,
   createInterview,
+  deleteInterview,
   finishInterview,
   getHint,
   getInterview,
   getRound,
   listInterviews,
   reportCheating,
+  setRetention,
   submitRound,
 } from "../controllers/interviewController.js";
 import { protect } from "../middlewares/auth.js";
@@ -17,6 +20,8 @@ import {
   createInterviewRules,
   hintRules,
   interviewIdRule,
+  listInterviewRules,
+  retentionRules,
   roundRules,
 } from "../validators/interviewValidators.js";
 
@@ -25,8 +30,11 @@ const router = Router();
 router.use(protect);
 
 router.post("/", createInterviewRules, validate, createInterview);
-router.get("/", listInterviews);
+router.get("/", listInterviewRules, validate, listInterviews);
+router.delete("/", clearHistory);
+router.patch("/retention", retentionRules, validate, setRetention);
 router.get("/:id", interviewIdRule, validate, getInterview);
+router.delete("/:id", interviewIdRule, validate, deleteInterview);
 router.get("/:id/round", interviewIdRule, validate, getRound);
 router.post("/:id/cheat", interviewIdRule, validate, reportCheating);
 router.post(

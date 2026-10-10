@@ -23,6 +23,13 @@ import {
 import { gradeRound } from "../services/scoreService.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { User } from "../models/User.js";
+import {
+  clearFinishedInterviews,
+  deleteInterviewById,
+  purgeExpiredInterviews,
+} from "../services/historyService.js";
+import { escapeRegex } from "../utils/escapeRegex.js";
 
 const findOwnedInterview = async (req) => {
   const interview = await Interview.findOne({
@@ -95,10 +102,18 @@ export const createInterview = asyncHandler(async (req, res) => {
 });
 
 export const listInterviews = asyncHandler(async (req, res) => {
+  await purgeExpiredInterviews(req.user);
+
   const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
   const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), 50);
+  const search =
+    typeof req.query.search === "string" ? req.query.search.trim() : "";
 
   const filter = { user: req.user._id };
+
+  if (search) {
+    filter.title = { $regex: escapeRegex(search), $options: "i" };
+  }
 
   const [interviews, total] = await Promise.all([
     Interview.find(filter)
@@ -114,6 +129,7 @@ export const listInterviews = asyncHandler(async (req, res) => {
     page,
     limit,
     total,
+    retentionDays: req.user.historyRetentionDays,
   });
 });
 
@@ -229,5 +245,49 @@ export const finishInterview = asyncHandler(async (req, res) => {
   res.json({
     success: true,
     ...result,
+  });
+});
+
+export const deleteInterview = asyncHandler(async (req, res) => {
+  const interview = await findOwnedInterview(req);
+
+  if (interview.status === "in_progress") {
+    throw new ApiError(409, "An interview in progress cannot be deleted");
+  }
+
+  await deleteInterviewById(req.user._id, interview._id);
+
+  res.json({
+    success: true,
+    message: "Interview deleted",
+  });
+});
+
+export const clearHistory = asyncHandler(async (req, res) => {
+  const deleted = await clearFinishedInterviews(req.user._id);
+
+  res.json({
+    success: true,
+    deleted,
+  });
+});
+
+export const setRetention = asyncHandler(async (req, res) => {
+  const { days } = req.body;
+
+  await User.updateOne(
+    { _id: req.user._id },
+    { $set: { historyRetentionDays: days } },
+  );
+
+  const deleted = await purgeExpiredInterviews({
+    _id: req.user._id,
+    historyRetentionDays: days,
+  });
+
+  res.json({
+    success: true,
+    retentionDays: days,
+    deleted,
   });
 });

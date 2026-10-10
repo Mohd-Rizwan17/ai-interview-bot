@@ -78,3 +78,7 @@ export const QUESTIONS_PER_ROUND = 10;
 export const MAX_CUSTOM_QUESTIONS = 50;
 
 export const GRACE_SEC = 5;
+
+export const RETENTION_OPTIONS = [3, 5, 7, 10, 20, 30];
+
+export const DEFAULT_RETENTION_DAYS = 5;
