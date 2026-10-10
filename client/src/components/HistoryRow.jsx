@@ -1,4 +1,6 @@
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router";
+import { deleteInterview } from "../store/historySlice.js";
 
 const STATUS = {
   completed: { label: "Completed", tone: "text-accent" },
@@ -21,13 +23,22 @@ const targetFor = (interview) => {
 };
 
 const HistoryRow = ({ interview }) => {
+  const dispatch = useDispatch();
+  const busy = useSelector((state) => state.history.busy);
   const status = STATUS[interview.status];
   const target = targetFor(interview);
+  const canDelete = interview.status !== "in_progress";
   const hasScore =
     interview.status === "completed" || interview.status === "ended_cheating";
   const showProgress =
     interview.status === "in_progress" || interview.status === "incomplete";
   const roundCount = interview.rounds.length;
+
+  const handleDelete = () => {
+    if (window.confirm(`Delete "${interview.title}"? This cannot be undone.`)) {
+      dispatch(deleteInterview(interview._id));
+    }
+  };
 
   const content = (
     <>
@@ -76,16 +87,31 @@ const HistoryRow = ({ interview }) => {
     </>
   );
 
-  const baseClass = "block rounded-xl border border-line bg-panel p-4";
-
-  if (!target) {
-    return <div className={`${baseClass} opacity-70`}>{content}</div>;
-  }
-
   return (
-    <Link to={target} className={`${baseClass} hover:border-muted`}>
-      {content}
-    </Link>
+    <div
+      className={`rounded-xl border border-line bg-panel ${target ? "hover:border-muted" : ""}`}
+    >
+      {target ? (
+        <Link to={target} className="block p-4">
+          {content}
+        </Link>
+      ) : (
+        <div className="p-4 opacity-70">{content}</div>
+      )}
+
+      {canDelete && (
+        <div className="flex justify-end border-t border-line px-4 py-2">
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={busy}
+            className="text-sm text-danger disabled:opacity-50"
+          >
+            Delete
+          </button>
+        </div>
+      )}
+    </div>
   );
 };
 
