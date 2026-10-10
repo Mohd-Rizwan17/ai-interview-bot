@@ -1,15 +1,31 @@
-import { configureStore } from "@reduxjs/toolkit";
+import { combineReducers, configureStore, isAnyOf } from "@reduxjs/toolkit";
 import { setSessionEndedHandler } from "../api/axios.js";
-import authReducer, { markSessionEnded } from "./authSlice.js";
+import authReducer, { logoutUser, markSessionEnded } from "./authSlice.js";
+import historyReducer from "./historySlice.js";
 import interviewReducer from "./interviewSlice.js";
 import reviewReducer from "./reviewSlice.js";
 
-export const store = configureStore({
-  reducer: {
-    auth: authReducer,
-    interview: interviewReducer,
-    review: reviewReducer,
-  },
+const appReducer = combineReducers({
+  auth: authReducer,
+  history: historyReducer,
+  interview: interviewReducer,
+  review: reviewReducer,
 });
+
+const isLoggedOut = isAnyOf(
+  logoutUser.fulfilled,
+  logoutUser.rejected,
+  markSessionEnded,
+);
+
+const rootReducer = (state, action) => {
+  if (isLoggedOut(action)) {
+    return appReducer({ auth: state?.auth }, action);
+  }
+
+  return appReducer(state, action);
+};
+
+export const store = configureStore({ reducer: rootReducer });
 
 setSessionEndedHandler(() => store.dispatch(markSessionEnded()));

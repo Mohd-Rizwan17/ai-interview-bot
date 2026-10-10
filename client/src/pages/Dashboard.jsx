@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import RoundOption from "../components/RoundOption.jsx";
 import { ALL_ROUNDS, DIFFICULTIES, ROUNDS } from "../constants/rounds.js";
 import { logoutUser } from "../store/authSlice.js";
+import { fetchActiveInterview } from "../store/historySlice.js";
 import {
   clearInterviewError,
   startInterview,
@@ -17,6 +18,7 @@ const Dashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
+  const active = useSelector((state) => state.history.active);
   const { status, error } = useSelector((state) => state.interview);
   const [selected, setSelected] = useState([]);
   const [difficulty, setDifficulty] = useState("medium");
@@ -26,6 +28,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     dispatch(clearInterviewError());
+    dispatch(fetchActiveInterview());
   }, [dispatch]);
 
   const toggleRound = (key) => {
@@ -55,14 +58,40 @@ const Dashboard = () => {
             Pick your rounds and start a mock interview.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => dispatch(logoutUser())}
-          className="rounded-md border border-line px-4 py-2 text-sm"
-        >
-          Logout
-        </button>
+        <nav className="flex items-center gap-2">
+          <Link
+            to="/history"
+            className="rounded-md border border-line px-4 py-2 text-sm"
+          >
+            History
+          </Link>
+          <button
+            type="button"
+            onClick={() => dispatch(logoutUser())}
+            className="rounded-md border border-line px-4 py-2 text-sm"
+          >
+            Logout
+          </button>
+        </nav>
       </header>
+
+      {active && (
+        <section className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-accent bg-panel p-4">
+          <div>
+            <p className="text-xs uppercase tracking-wide text-accent">
+              Interview in progress
+            </p>
+            <p className="mt-1 font-semibold">{active.title}</p>
+            <p className="text-sm text-muted">{active.progressPercent}% done</p>
+          </div>
+          <Link
+            to={`/interview/${active._id}`}
+            className="rounded-md bg-accent px-4 py-2 font-semibold text-ground"
+          >
+            Continue
+          </Link>
+        </section>
+      )}
 
       <section className="mt-8">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -143,8 +172,10 @@ const Dashboard = () => {
         >
           {isStarting ? "Preparing questions..." : "Start Interview"}
         </button>
-        <p className="mt-3 text-xs text-muted">
-          Starting a new interview ends any interview already in progress.
+        <p className={`mt-3 text-xs ${active ? "text-warn" : "text-muted"}`}>
+          {active
+            ? `Starting a new interview will end "${active.title}" and mark it incomplete.`
+            : "Starting a new interview ends any interview already in progress."}
         </p>
       </section>
     </main>
