@@ -9,6 +9,7 @@ import RoomBanner from "../components/RoomBanner.jsx";
 import RoundSubmit from "../components/RoundSubmit.jsx";
 import SidePanel from "../components/SidePanel.jsx";
 import useAntiCheat, { CHEAT_AWAY_MS } from "../hooks/useAntiCheat.js";
+import useSpeech, { buildSpeechText } from "../hooks/useSpeech.js";
 import useTimer from "../hooks/useTimer.js";
 import {
   fetchHint,
@@ -60,6 +61,7 @@ const InterviewRoom = () => {
   const [activeId, setActiveId] = useState(null);
   const [awaySeconds, setAwaySeconds] = useState(null);
   const [refreshInfo, setRefreshInfo] = useState(null);
+  const { supported: canSpeak, speaking, speak, stop } = useSpeech();
   const secondsLeft = useTimer(round?.endsAt);
   const isTimeUp = round?.secondsLeft === 0 || secondsLeft === 0;
   const isRoomActive =
@@ -105,6 +107,16 @@ const InterviewRoom = () => {
   const unanswered = questions.filter(
     (question) => question.status !== "answered",
   ).length;
+  const speechText = activeQuestion ? buildSpeechText(activeQuestion) : "";
+
+  useEffect(() => {
+    if (!isRoomActive || isTimeUp || !speechText) {
+      stop();
+      return;
+    }
+
+    speak(speechText);
+  }, [isRoomActive, isTimeUp, speechText, speak, stop]);
 
   const handleSubmit = async (answer) => {
     const result = await dispatch(
@@ -211,6 +223,10 @@ const InterviewRoom = () => {
             question={activeQuestion}
             number={activeIndex + 1}
             total={questions.length}
+            canSpeak={canSpeak}
+            isSpeaking={speaking}
+            onRead={() => speak(speechText)}
+            onStop={stop}
           />
           <HintBox
             key={activeQuestion.id}
