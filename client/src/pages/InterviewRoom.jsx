@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useParams } from "react-router";
+import { Navigate, useParams } from "react-router";
 import AnswerPanel from "../components/AnswerPanel.jsx";
+import HintBox from "../components/HintBox.jsx";
+import Notice from "../components/Notice.jsx";
 import QuestionPanel from "../components/QuestionPanel.jsx";
 import RoundSubmit from "../components/RoundSubmit.jsx";
 import SidePanel from "../components/SidePanel.jsx";
 import useTimer from "../hooks/useTimer.js";
 import {
+  fetchHint,
   fetchRound,
   resetRoom,
   submitAnswer,
@@ -14,16 +17,6 @@ import {
 } from "../store/interviewSlice.js";
 
 const POLL_MS = 2000;
-
-const Notice = ({ title, children }) => (
-  <main className="flex min-h-screen flex-col items-center justify-center gap-3 p-4 text-center">
-    <h1 className="text-xl font-semibold">{title}</h1>
-    {children}
-    <Link to="/" className="text-sm text-accent">
-      Back to dashboard
-    </Link>
-  </main>
-);
 
 const InterviewRoom = () => {
   const { id } = useParams();
@@ -80,6 +73,18 @@ const InterviewRoom = () => {
     }
   };
 
+  const handleHint = async () => {
+    const result = await dispatch(
+      fetchHint({ interviewId: id, attemptId: activeQuestion.id }),
+    );
+
+    if (fetchHint.rejected.match(result)) {
+      return result.payload?.message ?? "Something went wrong";
+    }
+
+    return null;
+  };
+
   const handleSubmitRound = async () => {
     const result = await dispatch(
       submitRound({
@@ -94,17 +99,9 @@ const InterviewRoom = () => {
     }
   };
 
-  if (roomFinished) {
-    return (
-      <Notice title="Interview submitted">
-        <p className="text-sm text-muted">
-          Your answers are saved. The review page is coming soon.
-        </p>
-      </Notice>
-    );
+  if (roomFinished || roomEnded) {
+    return <Navigate to={`/interview/${id}/review`} replace />;
   }
-
-  if (roomEnded) return <Notice title="This interview has ended" />;
 
   if (roomError) {
     return (
@@ -147,6 +144,12 @@ const InterviewRoom = () => {
             question={activeQuestion}
             number={activeIndex + 1}
             total={questions.length}
+          />
+          <HintBox
+            key={activeQuestion.id}
+            question={activeQuestion}
+            disabled={isTimeUp}
+            onReveal={handleHint}
           />
         </div>
         <div className="flex-1 lg:overflow-y-auto">

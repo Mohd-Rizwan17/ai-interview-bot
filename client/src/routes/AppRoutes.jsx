@@ -6,6 +6,7 @@ import InterviewRoom from "../pages/InterviewRoom.jsx";
 import Login from "../pages/Login.jsx";
 import NotFound from "../pages/NotFound.jsx";
 import Register from "../pages/Register.jsx";
+import Review from "../pages/Review.jsx";
 import ProtectedRoute from "./ProtectedRoute.jsx";
 
 const router = createBrowserRouter([
@@ -18,6 +19,7 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <Dashboard /> },
           { path: "interview/:id", element: <InterviewRoom /> },
+          { path: "interview/:id/review", element: <Review /> },
         ],
       },
       { path: "login", element: <Login /> },

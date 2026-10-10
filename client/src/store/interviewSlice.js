@@ -47,6 +47,20 @@ export const submitAnswer = createAsyncThunk(
   },
 );
 
+export const fetchHint = createAsyncThunk(
+  "interview/fetchHint",
+  async ({ interviewId, attemptId }, { rejectWithValue }) => {
+    try {
+      const { data } = await api.post(`/interviews/${interviewId}/hint`, {
+        attemptId,
+      });
+      return data;
+    } catch (error) {
+      return rejectWithValue(toRejection(error));
+    }
+  },
+);
+
 export const submitRound = createAsyncThunk(
   "interview/submitRound",
   async ({ interviewId, roundKey, isFinal }, { rejectWithValue }) => {
@@ -149,6 +163,19 @@ const interviewSlice = createSlice({
         }
 
         state.answerError = action.payload?.message ?? "Something went wrong";
+      })
+      .addCase(fetchHint.fulfilled, (state, action) => {
+        const question = state.questions.find(
+          (item) => item.id === action.meta.arg.attemptId,
+        );
+
+        if (!question) return;
+
+        question.hintUsed = true;
+        question.hint = action.payload.hint;
+      })
+      .addCase(fetchHint.rejected, (state, action) => {
+        if (action.payload?.code === "INTERVIEW_ENDED") state.roomEnded = true;
       })
       .addCase(submitRound.pending, (state) => {
         state.submitStatus = "loading";
