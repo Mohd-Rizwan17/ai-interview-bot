@@ -82,3 +82,7 @@ export const GRACE_SEC = 5;
 export const RETENTION_OPTIONS = [3, 5, 7, 10, 20, 30];
 
 export const DEFAULT_RETENTION_DAYS = 5;
+
+export const REFRESH_FREE_COUNT = 1;
+
+export const REFRESH_PENALTY = 1;

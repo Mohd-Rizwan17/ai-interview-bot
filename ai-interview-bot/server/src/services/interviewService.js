@@ -1,5 +1,7 @@
 import {
   MAX_SCORE_BY_FORMAT,
+  REFRESH_FREE_COUNT,
+  REFRESH_PENALTY,
   ROUND_TITLES,
   TIME_LIMIT_BY_FORMAT,
 } from "../constants/interview.js";
@@ -19,15 +21,36 @@ export const endInterview = (interviewId, status, extraUpdate = {}) =>
     { returnDocument: "after" },
   );
 
+export const recordRefresh = async (interviewId) => {
+  const interview = await Interview.findOneAndUpdate(
+    { _id: interviewId, status: "in_progress" },
+    { $inc: { refreshCount: 1 } },
+    { returnDocument: "after" },
+  );
+
+  if (!interview) return null;
+
+  if (
+    interview.refreshCount > REFRESH_FREE_COUNT &&
+    interview.penaltyMarks === 0
+  ) {
+    interview.penaltyMarks = REFRESH_PENALTY;
+    await interview.save();
+  }
+
+  return interview;
+};
+
 export const refreshProgress = async (interview) => {
   const attempts = await Attempt.find({ interview: interview._id }).select(
     "status score maxScore",
   );
 
-    const answered = attempts.filter(
-      (attempt) => !["pending", "asked"].includes(attempt.status),
-    ).length;
-  const obtained = attempts.reduce((sum, attempt) => sum + attempt.score, 0);
+  const answered = attempts.filter(
+    (attempt) => !["pending", "asked"].includes(attempt.status),
+  ).length;
+  const earned = attempts.reduce((sum, attempt) => sum + attempt.score, 0);
+  const obtained = Math.max(0, earned - (interview.penaltyMarks ?? 0));
   const total = attempts.reduce((sum, attempt) => sum + attempt.maxScore, 0);
 
   return Interview.findByIdAndUpdate(
@@ -55,6 +78,8 @@ export const buildSummary = (interview, attempts) => ({
   unanswered: attempts.filter((attempt) => attempt.status !== "answered")
     .length,
   cheatingFlags: interview.cheatingFlags,
+  refreshCount: interview.refreshCount,
+  penaltyMarks: interview.penaltyMarks,
 });
 
 export const toClientInterview = (interview) => {

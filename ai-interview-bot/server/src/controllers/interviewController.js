@@ -1,3 +1,4 @@
+import { REFRESH_FREE_COUNT } from "../constants/interview.js";
 import { Attempt } from "../models/Attempt.js";
 import { Interview } from "../models/Interview.js";
 import {
@@ -13,6 +14,7 @@ import {
   buildTitle,
   closeRunningInterview,
   endInterview,
+  recordRefresh,
   refreshProgress,
   toClientInterview,
 } from "../services/interviewService.js";
@@ -184,6 +186,22 @@ export const reportCheating = asyncHandler(async (req, res) => {
   res.json({
     success: true,
     interview: toClientInterview(updated),
+  });
+});
+
+export const reportRefresh = asyncHandler(async (req, res) => {
+  const interview = await findOwnedInterview(req);
+  const updated = await recordRefresh(interview._id);
+
+  if (!updated) {
+    throw new ApiError(409, "Interview has already ended", "INTERVIEW_ENDED");
+  }
+
+  res.json({
+    success: true,
+    refreshCount: updated.refreshCount,
+    penaltyMarks: updated.penaltyMarks,
+    freeRefreshes: REFRESH_FREE_COUNT,
   });
 });
 

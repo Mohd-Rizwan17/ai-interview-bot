@@ -137,6 +137,18 @@ const interviewSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    
+    refreshCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    penaltyMarks: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
 
     finalSubmittedAt: Date,
 

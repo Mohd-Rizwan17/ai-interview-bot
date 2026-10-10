@@ -10,6 +10,7 @@ import {
   getRound,
   listInterviews,
   reportCheating,
+  reportRefresh,
   setRetention,
   submitRound,
 } from "../controllers/interviewController.js";
@@ -37,6 +38,7 @@ router.get("/:id", interviewIdRule, validate, getInterview);
 router.delete("/:id", interviewIdRule, validate, deleteInterview);
 router.get("/:id/round", interviewIdRule, validate, getRound);
 router.post("/:id/cheat", interviewIdRule, validate, reportCheating);
+router.post("/:id/refresh", interviewIdRule, validate, reportRefresh);
 router.post(
   "/:id/answers",
   interviewIdRule,
