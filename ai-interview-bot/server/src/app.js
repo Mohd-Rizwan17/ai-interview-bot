@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import { env } from "./config/env.js";
 import authRoutes from "./routes/authRoutes.js";
 import interviewRoutes from "./routes/interviewRoutes.js";
+import miniProjectRoutes from "./miniProject/projectRoutes.js";
 import { notFound, errorHandler } from "./middlewares/errorHandler.js";
 import customQuestionRoutes from "./routes/customQuestionRoutes.js";
 
@@ -26,6 +27,7 @@ app.get("/api/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/interviews", interviewRoutes);
 app.use("/api/custom-questions", customQuestionRoutes);
+app.use("/api/mini-projects", miniProjectRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

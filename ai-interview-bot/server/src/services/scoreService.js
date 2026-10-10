@@ -6,6 +6,9 @@ const UNANSWERED_FEEDBACK = {
   timed_out: "Time is up for this question.",
 };
 
+const PROJECT_FEEDBACK =
+  "Mini projects are not graded. Compare your code with the requirements.";
+
 const roundToHalf = (value) => Math.round(value * 2) / 2;
 
 const countMatchedGroups = (answer, groups) => {
@@ -50,6 +53,10 @@ const gradeAttempt = (attempt, status) => {
       score: 0,
       feedback: UNANSWERED_FEEDBACK[status],
     };
+  }
+
+  if (attempt.format === "project") {
+    return { isCorrect: null, score: 0, feedback: PROJECT_FEEDBACK };
   }
 
   const result =

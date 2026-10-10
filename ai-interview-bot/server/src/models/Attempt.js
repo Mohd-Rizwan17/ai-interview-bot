@@ -128,6 +128,12 @@ const attemptSchema = new mongoose.Schema(
     },
 
     feedback: String,
+
+    project: {
+      id: String,
+      stack: String,
+    },
+    
   },
   { timestamps: true },
 );

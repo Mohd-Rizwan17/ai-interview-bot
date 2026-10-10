@@ -1,4 +1,5 @@
 import { DEFAULT_RETENTION_DAYS } from "../constants/interview.js";
+import { ProjectWork } from "../miniProject/ProjectWork.js";
 import { Attempt } from "../models/Attempt.js";
 import { Interview } from "../models/Interview.js";
 
@@ -11,6 +12,7 @@ const removeInterviews = async (filter) => {
 
   await Interview.deleteMany({ _id: { $in: ids } });
   await Attempt.deleteMany({ interview: { $in: ids } });
+  await ProjectWork.deleteMany({ interview: { $in: ids } });
 
   return ids.length;
 };

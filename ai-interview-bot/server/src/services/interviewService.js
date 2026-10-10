@@ -109,7 +109,9 @@ export const buildRounds = (keys, questionsByRound) =>
       status: index === 0 ? "in_progress" : "locked",
       startedAt: index === 0 ? new Date() : undefined,
       timeLimitSec: questions.reduce(
-        (sum, question) => sum + TIME_LIMIT_BY_FORMAT[question.format],
+        (sum, question) =>
+          sum +
+          (question.projectTimeSec ?? TIME_LIMIT_BY_FORMAT[question.format]),
         0,
       ),
       totalQuestions: questions.length,

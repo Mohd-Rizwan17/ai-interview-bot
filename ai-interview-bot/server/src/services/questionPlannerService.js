@@ -4,6 +4,7 @@ import {
   ROUND_TITLES,
   TIME_LIMIT_BY_FORMAT,
 } from "../constants/interview.js";
+import { pickProjectQuestion } from "../miniProject/projectBank.js";
 import { CustomQuestion } from "../models/CustomQuestion.js";
 import { GENERATORS, QUESTION_BANK } from "../questionBank/index.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -47,13 +48,26 @@ const pickCustomQuestions = async (userId) => {
     }));
 };
 
-export const pickQuestions = async (keys, difficulty, userId) => {
+const pickForKey = async (key, difficulty, userId, projectStack) => {
+  if (key === "my-questions") return pickCustomQuestions(userId);
+
+  if (key === "mini-project") {
+    return [pickProjectQuestion(projectStack, difficulty)];
+  }
+
+  return pickForRound(key, difficulty);
+};
+
+export const pickQuestions = async (
+  keys,
+  difficulty,
+  userId,
+  projectStack = "web",
+) => {
   const entries = await Promise.all(
     keys.map(async (key) => [
       key,
-      key === "my-questions"
-        ? await pickCustomQuestions(userId)
-        : pickForRound(key, difficulty),
+      await pickForKey(key, difficulty, userId, projectStack),
     ]),
   );
 
@@ -82,7 +96,9 @@ export const buildAttempts = (interviewId, keys, questionsByRound) => {
         explanation: question.explanation,
         hint: question.hint,
         keywords: question.keywords,
-        timeLimitSec: TIME_LIMIT_BY_FORMAT[question.format],
+        project: question.project,
+        timeLimitSec:
+          question.projectTimeSec ?? TIME_LIMIT_BY_FORMAT[question.format],
         maxScore: MAX_SCORE_BY_FORMAT[question.format],
       });
     });

@@ -5,6 +5,7 @@ import {
   INTERVIEW_ROUNDS,
   RETENTION_OPTIONS,
 } from "../constants/interview.js";
+import { STACKS } from "../miniProject/projectBank.js";
 
 export const createInterviewRules = [
   body("difficulty")
@@ -22,6 +23,10 @@ export const createInterviewRules = [
     })
     .custom((rounds) => rounds.every((key) => INTERVIEW_ROUNDS.includes(key)))
     .withMessage("Choose valid rounds"),
+  body("projectStack")
+    .optional()
+    .isIn(Object.keys(STACKS))
+    .withMessage("Choose a valid project stack"),
 ];
 
 export const interviewIdRule = [

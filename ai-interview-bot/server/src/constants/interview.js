@@ -12,6 +12,7 @@ export const INTERVIEW_ROUNDS = [
   "backend",
   "hr",
   "my-questions",
+  "mini-project",
 ];
 
 export const ALL_ROUNDS = [
@@ -36,6 +37,7 @@ export const ROUND_TITLES = {
   backend: "Backend",
   hr: "HR",
   "my-questions": "My Questions",
+  "mini-project": "Mini Project",
 };
 
 export const DIFFICULTIES = ["easy", "medium", "hard"];
@@ -47,7 +49,7 @@ export const INTERVIEW_STATUSES = [
   "ended_cheating",
 ];
 
-export const QUESTION_FORMATS = ["mcq", "practical", "descriptive"];
+export const QUESTION_FORMATS = ["mcq", "practical", "descriptive", "project"];
 
 export const ATTEMPT_STATUSES = [
   "pending",
@@ -61,6 +63,7 @@ export const MAX_SCORE_BY_FORMAT = {
   mcq: 2,
   descriptive: 3,
   practical: 5,
+  project: 0,
 };
 
 export const TIME_LIMIT_BY_FORMAT = {

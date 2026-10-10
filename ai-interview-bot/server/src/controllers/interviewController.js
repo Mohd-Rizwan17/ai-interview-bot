@@ -59,9 +59,14 @@ const findActiveInterview = async (req) => {
 };
 
 export const createInterview = asyncHandler(async (req, res) => {
-  const { difficulty, rounds: keys } = req.body;
+  const { difficulty, rounds: keys, projectStack } = req.body;
 
-  const questionsByRound = await pickQuestions(keys, difficulty, req.user._id);
+  const questionsByRound = await pickQuestions(
+    keys,
+    difficulty,
+    req.user._id,
+    projectStack,
+  );
   const rounds = buildRounds(keys, questionsByRound);
 
   await closeRunningInterview(req.user._id);
