@@ -23,7 +23,13 @@ export const ROUNDS = [
     note: "Node.js, Express and MongoDB mix",
   },
   { key: "hr", title: "HR", note: "Behavioural questions" },
+  
   { key: "my-questions", title: "My Questions", note: "Questions you added" },
+  {
+    key: "mini-project",
+    title: "Mini Project",
+    note: "Build a small app in the browser",
+  },
 ];
 
 export const ALL_ROUNDS = [

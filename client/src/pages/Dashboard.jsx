@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router";
 import RoundOption from "../components/RoundOption.jsx";
 import { ALL_ROUNDS, DIFFICULTIES, ROUNDS } from "../constants/rounds.js";
+import StackPicker from "../features/miniProject/components/StackPicker.jsx";
 import { logoutUser } from "../store/authSlice.js";
 import { fetchActiveInterview } from "../store/historySlice.js";
 import {
@@ -22,9 +23,11 @@ const Dashboard = () => {
   const { status, error } = useSelector((state) => state.interview);
   const [selected, setSelected] = useState([]);
   const [difficulty, setDifficulty] = useState("medium");
+  const [projectStack, setProjectStack] = useState(null);
   const isStarting = status === "loading";
   const firstName = user?.fullName?.split(" ")[0];
   const title = selected.map((key) => ROUND_TITLES[key]).join(" + ");
+  const hasMiniProject = selected.includes("mini-project");
 
   useEffect(() => {
     dispatch(clearInterviewError());
@@ -40,9 +43,11 @@ const Dashboard = () => {
   };
 
   const handleStart = async () => {
-    const result = await dispatch(
-      startInterview({ difficulty, rounds: selected }),
-    );
+    const payload = { difficulty, rounds: selected };
+
+    if (hasMiniProject) payload.projectStack = projectStack;
+
+    const result = await dispatch(startInterview(payload));
 
     if (startInterview.fulfilled.match(result)) {
       navigate(`/interview/${result.payload._id}`);
@@ -152,6 +157,10 @@ const Dashboard = () => {
           ))}
         </div>
 
+        {hasMiniProject && (
+          <StackPicker value={projectStack} onChange={setProjectStack} />
+        )}
+
         <p className="mt-6 text-sm text-muted">
           {selected.length === 0
             ? "Select at least one round."
@@ -167,7 +176,11 @@ const Dashboard = () => {
         <button
           type="button"
           onClick={handleStart}
-          disabled={selected.length === 0 || isStarting}
+          disabled={
+            selected.length === 0 ||
+            isStarting ||
+            (hasMiniProject && !projectStack)
+          }
           className="mt-4 w-full rounded-md bg-accent px-4 py-2 font-semibold text-ground disabled:opacity-60 sm:w-auto"
         >
           {isStarting ? "Preparing questions..." : "Start Interview"}
