@@ -37,6 +37,29 @@ export const saveProject = createAsyncThunk(
   },
 );
 
+const FLUSH_MAX_TRIES = 5;
+
+const FLUSH_WAIT_MS = 300;
+
+export const flushProject = createAsyncThunk(
+  "miniProject/flush",
+  async (_, { dispatch, getState }) => {
+    for (let tries = 0; tries < FLUSH_MAX_TRIES; tries += 1) {
+      const { saveStatus } = getState().miniProject;
+
+      if (saveStatus === "saved") break;
+
+      if (saveStatus === "saving") {
+        await new Promise((resolve) => setTimeout(resolve, FLUSH_WAIT_MS));
+      } else {
+        await dispatch(saveProject());
+      }
+    }
+
+    return getState().miniProject.saveStatus === "saved";
+  },
+);
+
 const initialState = {
   attemptId: null,
   status: "idle",

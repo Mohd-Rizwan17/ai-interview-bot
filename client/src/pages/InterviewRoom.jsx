@@ -8,6 +8,8 @@ import QuestionPanel from "../components/QuestionPanel.jsx";
 import RoomBanner from "../components/RoomBanner.jsx";
 import RoundSubmit from "../components/RoundSubmit.jsx";
 import SidePanel from "../components/SidePanel.jsx";
+import MiniProjectRoom from "../features/miniProject/MiniProjectRoom.jsx";
+import { flushProject } from "../features/miniProject/miniProjectSlice.js";
 import useAntiCheat, { CHEAT_AWAY_MS } from "../hooks/useAntiCheat.js";
 import useSpeech, { buildSpeechText } from "../hooks/useSpeech.js";
 import useTimer from "../hooks/useTimer.js";
@@ -58,9 +60,11 @@ const InterviewRoom = () => {
     submitStatus,
     submitError,
   } = useSelector((state) => state.interview);
+  const projectEnded = useSelector((state) => state.miniProject.ended);
   const [activeId, setActiveId] = useState(null);
   const [awaySeconds, setAwaySeconds] = useState(null);
   const [refreshInfo, setRefreshInfo] = useState(null);
+  const [saveBlocked, setSaveBlocked] = useState(false);
   const { supported: canSpeak, speaking, speak, stop } = useSpeech();
   const secondsLeft = useTimer(round?.endsAt);
   const isTimeUp = round?.secondsLeft === 0 || secondsLeft === 0;
@@ -104,10 +108,13 @@ const InterviewRoom = () => {
     questions.find((question) => question.status !== "answered") ??
     questions[0];
   const activeIndex = questions.indexOf(activeQuestion);
+  const isProject = activeQuestion?.format === "project";
   const unanswered = questions.filter(
-    (question) => question.status !== "answered",
+    (question) =>
+      question.format !== "project" && question.status !== "answered",
   ).length;
-  const speechText = activeQuestion ? buildSpeechText(activeQuestion) : "";
+  const speechText =
+    activeQuestion && !isProject ? buildSpeechText(activeQuestion) : "";
 
   useEffect(() => {
     if (!isRoomActive || isTimeUp || !speechText) {
@@ -146,6 +153,14 @@ const InterviewRoom = () => {
   };
 
   const handleSubmitRound = async () => {
+    if (isProject) {
+      const saved = await dispatch(flushProject());
+
+      setSaveBlocked(!saved.payload);
+
+      if (!saved.payload) return;
+    }
+
     const result = await dispatch(
       submitRound({
         interviewId: id,
@@ -159,7 +174,7 @@ const InterviewRoom = () => {
     }
   };
 
-  if (roomFinished || roomEnded) {
+  if (roomFinished || roomEnded || projectEnded) {
     return <Navigate to={`/interview/${id}/review`} replace />;
   }
 
@@ -198,6 +213,37 @@ const InterviewRoom = () => {
     );
   }
 
+  const notices = (
+    <>
+      {refreshInfo && (
+        <RoomBanner onDismiss={() => setRefreshInfo(null)}>
+          {refreshMessage(refreshInfo)}
+        </RoomBanner>
+      )}
+      {awaySeconds !== null && (
+        <RoomBanner onDismiss={() => setAwaySeconds(null)}>
+          You were away from this window for {awaySeconds} seconds. Staying away
+          for {CHEAT_AWAY_MS / 60000} minutes or more ends the interview as
+          cheating.
+        </RoomBanner>
+      )}
+      {saveBlocked && (
+        <RoomBanner onDismiss={() => setSaveBlocked(false)}>
+          Your code could not be saved yet. Check your connection and submit
+          again.
+        </RoomBanner>
+      )}
+      {isTimeUp && (
+        <p
+          role="status"
+          className="mx-6 mt-6 rounded-md border border-warn px-3 py-2 text-sm text-warn"
+        >
+          Time is up for this round. Your saved answers are being submitted.
+        </p>
+      )}
+    </>
+  );
+
   return (
     <div className="flex min-h-screen flex-col lg:h-screen lg:flex-row">
       <SidePanel
@@ -217,55 +263,47 @@ const InterviewRoom = () => {
         />
       </SidePanel>
 
-      <div className="flex flex-1 flex-col lg:flex-row lg:overflow-hidden">
-        <div className="flex-1 border-b border-line lg:overflow-y-auto lg:border-b-0 lg:border-r">
-          <QuestionPanel
-            question={activeQuestion}
-            number={activeIndex + 1}
-            total={questions.length}
-            canSpeak={canSpeak}
-            isSpeaking={speaking}
-            onRead={() => speak(speechText)}
-            onStop={stop}
-          />
-          <HintBox
+      {isProject ? (
+        <div className="flex min-w-0 flex-1 flex-col lg:overflow-hidden">
+          {notices}
+          <MiniProjectRoom
             key={activeQuestion.id}
-            question={activeQuestion}
-            disabled={isTimeUp}
-            onReveal={handleHint}
+            attemptId={activeQuestion.id}
+            isTimeUp={isTimeUp}
           />
         </div>
-        <div className="flex-1 lg:overflow-y-auto">
-          {refreshInfo && (
-            <RoomBanner onDismiss={() => setRefreshInfo(null)}>
-              {refreshMessage(refreshInfo)}
-            </RoomBanner>
-          )}
-          {awaySeconds !== null && (
-            <RoomBanner onDismiss={() => setAwaySeconds(null)}>
-              You were away from this window for {awaySeconds} seconds. Staying
-              away for {CHEAT_AWAY_MS / 60000} minutes or more ends the
-              interview as cheating.
-            </RoomBanner>
-          )}
-          {isTimeUp && (
-            <p
-              role="status"
-              className="mx-6 mt-6 rounded-md border border-warn px-3 py-2 text-sm text-warn"
-            >
-              Time is up for this round. Your saved answers are being submitted.
-            </p>
-          )}
-          <AnswerPanel
-            key={activeQuestion.id}
-            question={activeQuestion}
-            disabled={isTimeUp}
-            isSubmitting={answerStatus === "loading"}
-            error={answerError}
-            onSubmit={handleSubmit}
-          />
+      ) : (
+        <div className="flex flex-1 flex-col lg:flex-row lg:overflow-hidden">
+          <div className="flex-1 border-b border-line lg:overflow-y-auto lg:border-b-0 lg:border-r">
+            <QuestionPanel
+              question={activeQuestion}
+              number={activeIndex + 1}
+              total={questions.length}
+              canSpeak={canSpeak}
+              isSpeaking={speaking}
+              onRead={() => speak(speechText)}
+              onStop={stop}
+            />
+            <HintBox
+              key={activeQuestion.id}
+              question={activeQuestion}
+              disabled={isTimeUp}
+              onReveal={handleHint}
+            />
+          </div>
+          <div className="flex-1 lg:overflow-y-auto">
+            {notices}
+            <AnswerPanel
+              key={activeQuestion.id}
+              question={activeQuestion}
+              disabled={isTimeUp}
+              isSubmitting={answerStatus === "loading"}
+              error={answerError}
+              onSubmit={handleSubmit}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

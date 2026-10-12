@@ -162,3 +162,51 @@ export const deleteEntry = ({ files, folders }, path) => ({
     (folder) => folder !== path && !isInside(folder, path),
   ),
 });
+
+export const parentPath = (path) =>
+  path.slice(0, Math.max(0, path.lastIndexOf("/")));
+
+export const baseName = (path) => path.slice(path.lastIndexOf("/") + 1);
+
+const compareNodes = (first, second) => {
+  if (first.type !== second.type) return first.type === "folder" ? -1 : 1;
+
+  return first.name.localeCompare(second.name);
+};
+
+export const buildTree = (files, folders) => {
+  const root = { children: [] };
+  const folderNodes = new Map([["", root]]);
+
+  const ensureFolder = (path) => {
+    if (folderNodes.has(path)) return folderNodes.get(path);
+
+    const node = { type: "folder", path, name: baseName(path), children: [] };
+
+    ensureFolder(parentPath(path)).children.push(node);
+    folderNodes.set(path, node);
+
+    return node;
+  };
+
+  allFolders(files, folders).forEach((path) => ensureFolder(path));
+
+  files.forEach((file) => {
+    ensureFolder(parentPath(file.path)).children.push({
+      type: "file",
+      path: file.path,
+      name: baseName(file.path),
+    });
+  });
+
+  const sortAll = (nodes) => {
+    nodes.sort(compareNodes);
+    nodes.forEach((node) => {
+      if (node.children) sortAll(node.children);
+    });
+  };
+
+  sortAll(root.children);
+
+  return root.children;
+};
