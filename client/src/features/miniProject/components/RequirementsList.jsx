@@ -15,7 +15,7 @@ const RequirementsList = ({ project }) => {
   };
 
   return (
-    <aside className="w-full shrink-0 overflow-y-auto border-t border-line bg-panel p-4 lg:w-72 lg:border-l lg:border-t-0">
+    <div className="p-4">
       <h2 className="text-sm font-semibold">Task</h2>
       <p className="mt-1 text-sm text-muted">{project.description}</p>
 
@@ -42,7 +42,7 @@ const RequirementsList = ({ project }) => {
           </li>
         ))}
       </ul>
-    </aside>
+    </div>
   );
 };
 

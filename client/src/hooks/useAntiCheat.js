@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 
 const WARN_AWAY_MS = 30 * 1000;
 export const CHEAT_AWAY_MS = 2 * 60 * 1000;
+const CHECK_MS = 1000;
 
 const useAntiCheat = ({ enabled, onWarn, onCheat }) => {
   const onWarnRef = useRef(onWarn);
@@ -49,13 +50,9 @@ const useAntiCheat = ({ enabled, onWarn, onCheat }) => {
       }
     };
 
-    const handleVisibility = () => {
-      if (document.hidden) startAway();
-      else if (document.hasFocus()) endAway();
-    };
-
-    const handleFocus = () => {
-      if (!document.hidden) endAway();
+    const checkFocus = () => {
+      if (document.hidden || !document.hasFocus()) startAway();
+      else endAway();
     };
 
     const handleBeforeUnload = (event) => {
@@ -63,16 +60,15 @@ const useAntiCheat = ({ enabled, onWarn, onCheat }) => {
       event.returnValue = "";
     };
 
-    document.addEventListener("visibilitychange", handleVisibility);
-    window.addEventListener("blur", startAway);
-    window.addEventListener("focus", handleFocus);
+    const intervalId = setInterval(checkFocus, CHECK_MS);
+
+    document.addEventListener("visibilitychange", checkFocus);
     window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
+      clearInterval(intervalId);
       clearTimeout(cheatTimer);
-      document.removeEventListener("visibilitychange", handleVisibility);
-      window.removeEventListener("blur", startAway);
-      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", checkFocus);
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, [enabled]);

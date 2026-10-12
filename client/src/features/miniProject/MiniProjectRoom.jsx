@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import CodeEditor from "./components/CodeEditor.jsx";
 import FileTree from "./components/FileTree.jsx";
-import RequirementsList from "./components/RequirementsList.jsx";
+import ProjectAside from "./components/ProjectAside.jsx";
 import useAutosave from "./hooks/useAutosave.js";
 import {
   flushProject,
@@ -88,7 +88,7 @@ const MiniProjectRoom = ({ attemptId, isTimeUp }) => {
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         <FileTree disabled={isTimeUp} />
         <CodeEditor readOnly={isTimeUp} />
-        <RequirementsList project={project} />
+        <ProjectAside project={project} />
       </div>
     </div>
   );
