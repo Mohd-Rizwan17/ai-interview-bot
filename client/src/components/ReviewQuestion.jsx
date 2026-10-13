@@ -1,3 +1,5 @@
+import ProjectReview from "../features/miniProject/ProjectReview.jsx";
+
 const LETTERS = ["A", "B", "C", "D"];
 
 const verdictFor = (attempt) => {
@@ -26,6 +28,8 @@ const optionTone = (isCorrect, isChosen) => {
 };
 
 const ReviewQuestion = ({ attempt }) => {
+  if (attempt.format === "project") return <ProjectReview attempt={attempt} />;
+
   const verdict = verdictFor(attempt);
   const isMcq = attempt.format === "mcq";
 

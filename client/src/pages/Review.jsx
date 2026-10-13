@@ -76,8 +76,9 @@ const Review = () => {
                 Round {round.order}: {round.title}
               </h2>
               <p className="font-mono text-sm text-muted">
-                {sumOf(roundAttempts, "score")} /{" "}
-                {sumOf(roundAttempts, "maxScore")}
+                {sumOf(roundAttempts, "maxScore") === 0
+                  ? "Not graded"
+                  : `${sumOf(roundAttempts, "score")} / ${sumOf(roundAttempts, "maxScore")}`}
               </p>
             </div>
             {round.status === "locked" && (
