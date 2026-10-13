@@ -22,11 +22,17 @@ const ScoreCard = ({ interview, summary }) => {
       </p>
       <h1 className="mt-1 text-2xl font-semibold">{interview.title}</h1>
 
-      <p className="mt-4 font-mono text-4xl font-medium text-accent">
-        {summary.obtainedMarks}{" "}
-        <span className="text-lg text-muted">/ {summary.totalMarks}</span>
-      </p>
-      <p className="text-sm text-muted">{percent}% score</p>
+      {summary.totalMarks === 0 ? (
+        <p className="mt-4 text-xl text-muted">Not graded</p>
+      ) : (
+        <>
+          <p className="mt-4 font-mono text-4xl font-medium text-accent">
+            {summary.obtainedMarks}{" "}
+            <span className="text-lg text-muted">/ {summary.totalMarks}</span>
+          </p>
+          <p className="text-sm text-muted">{percent}% score</p>
+        </>
+      )}
 
       <dl className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         {stats.map((stat) => (
