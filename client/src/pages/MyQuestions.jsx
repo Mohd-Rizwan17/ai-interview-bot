@@ -1,6 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router";
+import CustomQuestionForm from "../components/CustomQuestionForm.jsx";
 import CustomQuestionRow from "../components/CustomQuestionRow.jsx";
 import Notice from "../components/Notice.jsx";
 import {
@@ -12,9 +13,11 @@ const MAX_QUESTIONS = 50;
 
 const MyQuestions = () => {
   const dispatch = useDispatch();
+  const [showForm, setShowForm] = useState(false);
   const { items, loaded, error, actionError } = useSelector(
     (state) => state.customQuestions,
   );
+  const isFull = items.length >= MAX_QUESTIONS;
 
   useEffect(() => {
     dispatch(fetchCustomQuestions());
@@ -23,6 +26,11 @@ const MyQuestions = () => {
       dispatch(clearActionError());
     };
   }, [dispatch]);
+
+  const openForm = () => {
+    dispatch(clearActionError());
+    setShowForm(true);
+  };
 
   if (error) {
     return (
@@ -46,20 +54,45 @@ const MyQuestions = () => {
         ← Dashboard
       </Link>
 
-      <div className="mt-4 flex flex-wrap items-baseline justify-between gap-3">
-        <h1 className="text-2xl font-semibold">My Questions</h1>
-        <p className="font-mono text-sm text-muted">
-          {items.length} / {MAX_QUESTIONS} saved
-        </p>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold">My Questions</h1>
+          <p className="font-mono text-sm text-muted">
+            {items.length} / {MAX_QUESTIONS} saved
+          </p>
+        </div>
+        {!showForm && (
+          <button
+            type="button"
+            onClick={openForm}
+            disabled={isFull}
+            className="rounded-md bg-accent px-4 py-2 font-semibold text-ground disabled:opacity-60"
+          >
+            Add question
+          </button>
+        )}
       </div>
       <p className="text-sm text-muted">
         These questions are used in the My Questions round.
       </p>
 
-      {actionError && (
+      {isFull && !showForm && (
+        <p className="mt-2 text-sm text-warn">
+          Limit reached. Delete a question to add a new one.
+        </p>
+      )}
+
+      {actionError && !showForm && (
         <p role="alert" className="mt-4 text-sm text-danger">
           {actionError}
         </p>
+      )}
+
+      {showForm && (
+        <CustomQuestionForm
+          onDone={() => setShowForm(false)}
+          onCancel={() => setShowForm(false)}
+        />
       )}
 
       {items.length === 0 ? (
