@@ -66,7 +66,10 @@ const Review = () => {
           (attempt) => attempt.roundKey === round.key,
         );
         const visible = onlyMistakes
-          ? roundAttempts.filter((attempt) => attempt.isCorrect !== true)
+          ? roundAttempts.filter(
+              (attempt) =>
+                attempt.format !== "project" && attempt.isCorrect !== true,
+            )
           : roundAttempts;
 
         return (

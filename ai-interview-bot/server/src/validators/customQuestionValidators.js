@@ -1,11 +1,11 @@
 import { body, param } from "express-validator";
-import { QUESTION_FORMATS } from "../constants/interview.js";
+import { CUSTOM_QUESTION_FORMATS } from "../constants/interview.js";
 
 const whenMcq = () => body("format").equals("mcq");
 const whenTheory = () => body("format").isIn(["practical", "descriptive"]);
 
 export const customQuestionRules = [
-  body("format").isIn(QUESTION_FORMATS).withMessage("Choose a valid format"),
+  body("format").isIn(CUSTOM_QUESTION_FORMATS).withMessage("Choose a valid format"),
   body("question")
     .isString()
     .withMessage("Question is required")

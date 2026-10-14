@@ -89,3 +89,5 @@ export const DEFAULT_RETENTION_DAYS = 5;
 export const REFRESH_FREE_COUNT = 1;
 
 export const REFRESH_PENALTY = 1;
+
+export const CUSTOM_QUESTION_FORMATS = ["mcq", "practical", "descriptive"];
