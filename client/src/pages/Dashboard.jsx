@@ -63,7 +63,13 @@ const Dashboard = () => {
             Pick your rounds and start a mock interview.
           </p>
         </div>
-        <nav className="flex items-center gap-2">
+        <nav className="flex flex-wrap items-center gap-2">
+          <Link
+            to="/my-questions"
+            className="rounded-md border border-line px-4 py-2 text-sm"
+          >
+            My Questions
+          </Link>
           <Link
             to="/history"
             className="rounded-md border border-line px-4 py-2 text-sm"

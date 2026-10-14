@@ -9,6 +9,7 @@ import NotFound from "../pages/NotFound.jsx";
 import Register from "../pages/Register.jsx";
 import Review from "../pages/Review.jsx";
 import ProtectedRoute from "./ProtectedRoute.jsx";
+import MyQuestions from "../pages/MyQuestions.jsx";
 
 const router = createBrowserRouter([
   {
@@ -22,6 +23,7 @@ const router = createBrowserRouter([
           { path: "history", element: <History /> },
           { path: "interview/:id", element: <InterviewRoom /> },
           { path: "interview/:id/review", element: <Review /> },
+          { path: "my-questions", element: <MyQuestions /> },
         ],
       },
       { path: "login", element: <Login /> },
