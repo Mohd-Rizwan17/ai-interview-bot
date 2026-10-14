@@ -4,6 +4,7 @@ import { Link } from "react-router";
 import CustomQuestionForm from "../components/CustomQuestionForm.jsx";
 import CustomQuestionRow from "../components/CustomQuestionRow.jsx";
 import Notice from "../components/Notice.jsx";
+import PdfImport from "../components/PdfImport.jsx";
 import {
   clearActionError,
   fetchCustomQuestions,
@@ -14,10 +15,12 @@ const MAX_QUESTIONS = 50;
 const MyQuestions = () => {
   const dispatch = useDispatch();
   const [showForm, setShowForm] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const { items, loaded, error, actionError } = useSelector(
     (state) => state.customQuestions,
   );
   const isFull = items.length >= MAX_QUESTIONS;
+  const isPanelOpen = showForm || showImport;
 
   useEffect(() => {
     dispatch(fetchCustomQuestions());
@@ -30,6 +33,11 @@ const MyQuestions = () => {
   const openForm = () => {
     dispatch(clearActionError());
     setShowForm(true);
+  };
+
+  const openImport = () => {
+    dispatch(clearActionError());
+    setShowImport(true);
   };
 
   if (error) {
@@ -61,22 +69,32 @@ const MyQuestions = () => {
             {items.length} / {MAX_QUESTIONS} saved
           </p>
         </div>
-        {!showForm && (
-          <button
-            type="button"
-            onClick={openForm}
-            disabled={isFull}
-            className="rounded-md bg-accent px-4 py-2 font-semibold text-ground disabled:opacity-60"
-          >
-            Add question
-          </button>
+        {!isPanelOpen && (
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={openImport}
+              disabled={isFull}
+              className="rounded-md border border-line px-4 py-2 text-sm disabled:opacity-60"
+            >
+              Import from PDF
+            </button>
+            <button
+              type="button"
+              onClick={openForm}
+              disabled={isFull}
+              className="rounded-md bg-accent px-4 py-2 font-semibold text-ground disabled:opacity-60"
+            >
+              Add question
+            </button>
+          </div>
         )}
       </div>
       <p className="text-sm text-muted">
         These questions are used in the My Questions round.
       </p>
 
-      {isFull && !showForm && (
+      {isFull && !isPanelOpen && (
         <p className="mt-2 text-sm text-warn">
           Limit reached. Delete a question to add a new one.
         </p>
@@ -94,6 +112,8 @@ const MyQuestions = () => {
           onCancel={() => setShowForm(false)}
         />
       )}
+
+      {showImport && <PdfImport onClose={() => setShowImport(false)} />}
 
       {items.length === 0 ? (
         <p className="mt-8 text-muted">No questions yet.</p>
