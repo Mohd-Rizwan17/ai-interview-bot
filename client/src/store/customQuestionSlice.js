@@ -28,6 +28,25 @@ export const createCustomQuestion = createAsyncThunk(
   },
 );
 
+export const importCustomQuestions = createAsyncThunk(
+  "customQuestions/import",
+  async (entries) => {
+    const saved = [];
+
+    for (const { id, payload } of entries) {
+      try {
+        const { data } = await api.post("/custom-questions", payload);
+
+        saved.push({ id, question: data.question });
+      } catch (error) {
+        return { saved, failed: { id, message: messageOf(error) } };
+      }
+    }
+
+    return { saved, failed: null };
+  },
+);
+
 export const deleteCustomQuestion = createAsyncThunk(
   "customQuestions/delete",
   async (id, { rejectWithValue }) => {
@@ -71,24 +90,41 @@ const customQuestionSlice = createSlice({
       .addCase(createCustomQuestion.fulfilled, (state, action) => {
         state.items.unshift(action.payload);
       })
+      .addCase(importCustomQuestions.fulfilled, (state, action) => {
+        action.payload.saved.forEach(({ question }) => {
+          state.items.unshift(question);
+        });
+      })
       .addCase(deleteCustomQuestion.fulfilled, (state, action) => {
         state.items = state.items.filter((item) => item._id !== action.payload);
       })
       .addMatcher(
-        isAnyOf(createCustomQuestion.pending, deleteCustomQuestion.pending),
+        isAnyOf(
+          createCustomQuestion.pending,
+          importCustomQuestions.pending,
+          deleteCustomQuestion.pending,
+        ),
         (state) => {
           state.busy = true;
           state.actionError = null;
         },
       )
       .addMatcher(
-        isAnyOf(createCustomQuestion.fulfilled, deleteCustomQuestion.fulfilled),
+        isAnyOf(
+          createCustomQuestion.fulfilled,
+          importCustomQuestions.fulfilled,
+          deleteCustomQuestion.fulfilled,
+        ),
         (state) => {
           state.busy = false;
         },
       )
       .addMatcher(
-        isAnyOf(createCustomQuestion.rejected, deleteCustomQuestion.rejected),
+        isAnyOf(
+          createCustomQuestion.rejected,
+          importCustomQuestions.rejected,
+          deleteCustomQuestion.rejected,
+        ),
         (state, action) => {
           state.busy = false;
           state.actionError = action.payload ?? "Something went wrong";

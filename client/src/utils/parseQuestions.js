@@ -235,3 +235,13 @@ export const parseQuestions = (rawText) => {
     ),
   );
 };
+
+export const draftToPayload = (draft) => ({
+  format: "mcq",
+  topic: draft.topic.trim(),
+  question: draft.question.trim(),
+  options: draft.options.map((option) => option.trim()),
+  correctOption: draft.correctOption,
+  hint: draft.hint.trim(),
+  explanation: draft.explanation.trim(),
+});

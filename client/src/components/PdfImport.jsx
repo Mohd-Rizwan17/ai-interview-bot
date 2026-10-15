@@ -1,17 +1,14 @@
 import { useState } from "react";
 import { parseQuestions } from "../utils/parseQuestions.js";
+import ImportReview from "./ImportReview.jsx";
 
 const PREVIEW_CHARS = 200000;
-const LETTERS = ["A", "B", "C", "D"];
 
 const PdfImport = ({ onClose }) => {
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
   const isLoading = status === "loading";
-  const readyCount = result?.drafts.filter(
-    (draft) => !draft.issues.length,
-  ).length;
 
   const handleFile = async (event) => {
     const [file] = event.target.files;
@@ -29,6 +26,7 @@ const PdfImport = ({ onClose }) => {
       const { text, pageCount } = await extractPdfText(file);
 
       setResult({
+        id: Date.now(),
         name: file.name,
         text,
         pageCount,
@@ -91,56 +89,11 @@ const PdfImport = ({ onClose }) => {
               No questions found. This PDF layout is not supported yet.
             </p>
           ) : (
-            <>
-              <p className="mt-3 text-sm">
-                Found <span className="font-mono">{result.drafts.length}</span>{" "}
-                questions ·{" "}
-                <span className="font-mono text-accent">{readyCount}</span>{" "}
-                ready ·{" "}
-                <span className="font-mono text-danger">
-                  {result.drafts.length - readyCount}
-                </span>{" "}
-                need fixing
-              </p>
-              <ul className="mt-3 flex max-h-96 flex-col gap-3 overflow-y-auto">
-                {result.drafts.map((draft) => (
-                  <li
-                    key={draft.id}
-                    className="rounded-md border border-line bg-ground p-3 text-sm"
-                  >
-                    <p className="font-mono text-xs text-muted">
-                      Q{draft.number}
-                      {draft.topic && ` · ${draft.topic}`}
-                    </p>
-                    <p className="mt-1">{draft.question}</p>
-                    <ul className="mt-2 flex flex-col gap-1">
-                      {draft.options.map((option, index) => (
-                        <li
-                          key={index}
-                          className={
-                            index === draft.correctOption
-                              ? "text-accent"
-                              : "text-muted"
-                          }
-                        >
-                          {LETTERS[index]}. {option}
-                          {index === draft.correctOption && " ✓"}
-                        </li>
-                      ))}
-                    </ul>
-                    <p className="mt-2 text-xs text-muted">
-                      Hint: {draft.hint ? "yes" : "no"} · Explanation:{" "}
-                      {draft.explanation ? "yes" : "no"}
-                    </p>
-                    {draft.issues.map((issue) => (
-                      <p key={issue} className="mt-1 text-xs text-danger">
-                        {issue}
-                      </p>
-                    ))}
-                  </li>
-                ))}
-              </ul>
-            </>
+            <ImportReview
+              key={result.id}
+              initialDrafts={result.drafts}
+              onDone={onClose}
+            />
           )}
 
           <details className="mt-4">
