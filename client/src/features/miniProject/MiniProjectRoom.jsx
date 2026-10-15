@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import CodeEditor from "./components/CodeEditor.jsx";
 import FileTree from "./components/FileTree.jsx";
+import ProjectActions from "./components/ProjectActions.jsx";
 import ProjectAside from "./components/ProjectAside.jsx";
 import useAutosave from "./hooks/useAutosave.js";
 import {
@@ -18,7 +19,7 @@ const SAVE_LABELS = {
   error: { text: "Save failed", tone: "text-danger" },
 };
 
-const MiniProjectRoom = ({ attemptId, isTimeUp }) => {
+const MiniProjectRoom = ({ attemptId, isTimeUp, submit }) => {
   const dispatch = useDispatch();
   const { status, error, project, saveStatus, saveError } = useSelector(
     (state) => state.miniProject,
@@ -88,7 +89,10 @@ const MiniProjectRoom = ({ attemptId, isTimeUp }) => {
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         <FileTree disabled={isTimeUp} />
         <CodeEditor readOnly={isTimeUp} />
-        <ProjectAside project={project} />
+        <ProjectAside
+          project={project}
+          footer={<ProjectActions isTimeUp={isTimeUp}>{submit}</ProjectActions>}
+        />
       </div>
     </div>
   );

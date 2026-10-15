@@ -150,7 +150,9 @@ export const saveWork = async (userId, attemptId, { files, folders = [] }) => {
 
   if (!work) throw new ApiError(409, "Open the project before saving");
 
-  if (hasChanges(files, work.stack)) await markAnswered(interview, attempt);
+  const answered = hasChanges(files, work.stack);
 
-  return { savedAt: work.updatedAt };
+  if (answered) await markAnswered(interview, attempt);
+
+  return { savedAt: work.updatedAt, answered };
 };

@@ -26,7 +26,12 @@ export const saveProject = createAsyncThunk(
     try {
       const data = await putProjectFiles(attemptId, { files, folders });
 
-      return { savedAt: data.savedAt, version: editVersion };
+      return {
+        savedAt: data.savedAt,
+        answered: data.answered,
+        attemptId,
+        version: editVersion,
+      };
     } catch (error) {
       return rejectWithValue(toRejection(error));
     }

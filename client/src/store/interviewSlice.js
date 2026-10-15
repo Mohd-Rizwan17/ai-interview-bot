@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import api from "../api/axios.js";
+import { saveProject } from "../features/miniProject/miniProjectSlice.js";
 
 const toRejection = (error) => ({
   message: error.response?.data?.message || "Cannot reach the server",
@@ -160,6 +161,15 @@ const interviewSlice = createSlice({
         }
 
         state.roomError = action.payload?.message ?? "Something went wrong";
+      })
+      .addCase(saveProject.fulfilled, (state, action) => {
+        if (!action.payload.answered) return;
+
+        const question = state.questions.find(
+          (item) => item.id === action.payload.attemptId,
+        );
+
+        if (question) question.status = "answered";
       })
       .addCase(submitAnswer.pending, (state) => {
         state.answerStatus = "loading";

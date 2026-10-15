@@ -7,7 +7,7 @@ const TABS = [
   { key: "preview", label: "Preview" },
 ];
 
-const ProjectAside = ({ project }) => {
+const ProjectAside = ({ project, footer }) => {
   const [tab, setTab] = useState("task");
 
   return (
@@ -40,6 +40,8 @@ const ProjectAside = ({ project }) => {
       >
         <PreviewFrame />
       </div>
+
+      {footer && <div className="border-t border-line p-3">{footer}</div>}
     </aside>
   );
 };

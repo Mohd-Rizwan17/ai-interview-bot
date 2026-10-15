@@ -243,6 +243,16 @@ const InterviewRoom = () => {
       )}
     </>
   );
+    const roundSubmit = (
+      <RoundSubmit
+        key={round.key}
+        isLast={round.isLastRound}
+        unanswered={unanswered}
+        isSubmitting={submitStatus === "loading"}
+        error={submitError}
+        onSubmit={handleSubmitRound}
+      />
+    );
 
   return (
     <div className="flex min-h-screen flex-col lg:h-screen lg:flex-row">
@@ -253,14 +263,7 @@ const InterviewRoom = () => {
         secondsLeft={isTimeUp ? 0 : secondsLeft}
         onSelect={setActiveId}
       >
-        <RoundSubmit
-          key={round.key}
-          isLast={round.isLastRound}
-          unanswered={unanswered}
-          isSubmitting={submitStatus === "loading"}
-          error={submitError}
-          onSubmit={handleSubmitRound}
-        />
+        {roundSubmit}
       </SidePanel>
 
       {isProject ? (
@@ -270,6 +273,7 @@ const InterviewRoom = () => {
             key={activeQuestion.id}
             attemptId={activeQuestion.id}
             isTimeUp={isTimeUp}
+            submit={roundSubmit}
           />
         </div>
       ) : (
