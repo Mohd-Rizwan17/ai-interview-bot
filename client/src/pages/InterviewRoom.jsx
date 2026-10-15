@@ -273,7 +273,6 @@ const InterviewRoom = () => {
             key={activeQuestion.id}
             attemptId={activeQuestion.id}
             isTimeUp={isTimeUp}
-            submit={roundSubmit}
           />
         </div>
       ) : (
