@@ -1,15 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router";
-import RoundOption from "../components/RoundOption.jsx";
-import { ALL_ROUNDS, DIFFICULTIES, ROUNDS } from "../constants/rounds.js";
+import { DIFFICULTIES, ROUNDS } from "../constants/rounds.js";
 import StackPicker from "../features/miniProject/components/StackPicker.jsx";
-import { logoutUser } from "../store/authSlice.js";
 import { fetchActiveInterview } from "../store/historySlice.js";
 import {
   clearInterviewError,
   startInterview,
 } from "../store/interviewSlice.js";
+import { setDifficulty, setProjectStack } from "../store/selectionSlice.js";
 
 const ROUND_TITLES = Object.fromEntries(
   ROUNDS.map((round) => [round.key, round.title]),
@@ -20,27 +19,26 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
   const active = useSelector((state) => state.history.active);
+  const counts = useSelector((state) => state.customQuestions.counts);
   const { status, error } = useSelector((state) => state.interview);
-  const [selected, setSelected] = useState([]);
-  const [difficulty, setDifficulty] = useState("medium");
-  const [projectStack, setProjectStack] = useState(null);
+  const {
+    rounds: selected,
+    difficulty,
+    projectStack,
+  } = useSelector((state) => state.selection);
   const isStarting = status === "loading";
   const firstName = user?.fullName?.split(" ")[0];
   const title = selected.map((key) => ROUND_TITLES[key]).join(" + ");
   const hasMiniProject = selected.includes("mini-project");
+  const hasNoCustomQuestions =
+    selected.includes("my-questions") &&
+    counts !== null &&
+    counts[difficulty] === 0;
 
   useEffect(() => {
     dispatch(clearInterviewError());
     dispatch(fetchActiveInterview());
   }, [dispatch]);
-
-  const toggleRound = (key) => {
-    setSelected((current) =>
-      current.includes(key)
-        ? current.filter((item) => item !== key)
-        : [...current, key],
-    );
-  };
 
   const handleStart = async () => {
     const payload = { difficulty, rounds: selected };
@@ -55,35 +53,12 @@ const Dashboard = () => {
   };
 
   return (
-    <main className="mx-auto min-h-screen max-w-5xl px-4 py-8">
-      <header className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">Hi, {firstName}</h1>
-          <p className="text-sm text-muted">
-            Pick your rounds and start a mock interview.
-          </p>
-        </div>
-        <nav className="flex flex-wrap items-center gap-2">
-          <Link
-            to="/my-questions"
-            className="rounded-md border border-line px-4 py-2 text-sm"
-          >
-            My Questions
-          </Link>
-          <Link
-            to="/history"
-            className="rounded-md border border-line px-4 py-2 text-sm"
-          >
-            History
-          </Link>
-          <button
-            type="button"
-            onClick={() => dispatch(logoutUser())}
-            className="rounded-md border border-line px-4 py-2 text-sm"
-          >
-            Logout
-          </button>
-        </nav>
+    <main className="mx-auto max-w-3xl px-4 py-8">
+      <header>
+        <h1 className="text-2xl font-semibold">Hi, {firstName}</h1>
+        <p className="text-sm text-muted">
+          Pick rounds from the sidebar and start a mock interview.
+        </p>
       </header>
 
       {active && (
@@ -104,45 +79,6 @@ const Dashboard = () => {
         </section>
       )}
 
-      <section className="mt-8">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-lg font-semibold">Rounds</h2>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setSelected(ALL_ROUNDS)}
-              className="rounded-md border border-line px-3 py-1 text-sm"
-            >
-              Select All
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelected([])}
-              disabled={selected.length === 0}
-              className="rounded-md border border-line px-3 py-1 text-sm disabled:opacity-50"
-            >
-              Clear
-            </button>
-          </div>
-        </div>
-        <p className="mt-1 text-sm text-muted">
-          Rounds run in the order you pick them. All selects Aptitude,
-          Reasoning, DSA, Frontend and Backend.
-        </p>
-
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {ROUNDS.map((round) => (
-            <RoundOption
-              key={round.key}
-              title={round.title}
-              note={round.note}
-              position={selected.indexOf(round.key) + 1}
-              onToggle={() => toggleRound(round.key)}
-            />
-          ))}
-        </div>
-      </section>
-
       <section className="mt-8 rounded-xl border border-line bg-panel p-6">
         <h2 className="text-lg font-semibold">Difficulty</h2>
         <div className="mt-3 flex gap-2">
@@ -150,7 +86,7 @@ const Dashboard = () => {
             <button
               key={level}
               type="button"
-              onClick={() => setDifficulty(level)}
+              onClick={() => dispatch(setDifficulty(level))}
               aria-pressed={difficulty === level}
               className={`rounded-md border px-4 py-2 text-sm capitalize ${
                 difficulty === level
@@ -164,14 +100,24 @@ const Dashboard = () => {
         </div>
 
         {hasMiniProject && (
-          <StackPicker value={projectStack} onChange={setProjectStack} />
+          <StackPicker
+            value={projectStack}
+            onChange={(stack) => dispatch(setProjectStack(stack))}
+          />
         )}
 
         <p className="mt-6 text-sm text-muted">
           {selected.length === 0
-            ? "Select at least one round."
+            ? "Select at least one round from the sidebar."
             : `${title} · ${selected.length} round${selected.length > 1 ? "s" : ""} · up to 10 questions each`}
         </p>
+
+        {hasNoCustomQuestions && (
+          <p role="status" className="mt-3 text-sm text-warn">
+            No {difficulty} questions in My Questions yet. Choose another
+            difficulty or remove that round.
+          </p>
+        )}
 
         {error && (
           <p role="alert" className="mt-3 text-sm text-danger">
@@ -185,6 +131,7 @@ const Dashboard = () => {
           disabled={
             selected.length === 0 ||
             isStarting ||
+            hasNoCustomQuestions ||
             (hasMiniProject && !projectStack)
           }
           className="mt-4 w-full rounded-md bg-accent px-4 py-2 font-semibold text-ground disabled:opacity-60 sm:w-auto"

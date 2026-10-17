@@ -1,4 +1,4 @@
-const RoundOption = ({ title, note, position, onToggle }) => {
+const RoundOption = ({ title, note, meta, position, onToggle }) => {
   const isSelected = position > 0;
 
   return (
@@ -6,17 +6,26 @@ const RoundOption = ({ title, note, position, onToggle }) => {
       type="button"
       onClick={onToggle}
       aria-pressed={isSelected}
-      className={`relative rounded-lg border bg-panel p-4 text-left transition-colors ${
-        isSelected ? "border-accent" : "border-line hover:border-muted"
+      title={note}
+      className={`flex w-full items-center gap-3 rounded-md border px-3 py-2 text-left text-sm transition-colors ${
+        isSelected
+          ? "border-accent bg-ground"
+          : "border-transparent hover:bg-ground"
       }`}
     >
-      <span className="font-semibold">{title}</span>
-      <span className="mt-1 block text-sm text-muted">{note}</span>
-      {isSelected && (
-        <span className="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-full bg-accent font-mono text-xs font-bold text-ground">
-          {position}
-        </span>
-      )}
+      <span className="min-w-0 flex-1">
+        <span className="block truncate">{title}</span>
+        {meta && (
+          <span className="block truncate text-xs text-muted">{meta}</span>
+        )}
+      </span>
+      <span
+        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full font-mono text-xs font-bold ${
+          isSelected ? "bg-accent text-ground" : "border border-line"
+        }`}
+      >
+        {isSelected ? position : ""}
+      </span>
     </button>
   );
 };

@@ -1,15 +1,18 @@
 import { createBrowserRouter } from "react-router";
 import { RouterProvider } from "react-router/dom";
+import AppShell from "../layouts/AppShell.jsx";
 import MainLayout from "../layouts/MainLayout.jsx";
-import Dashboard from "../pages/Dashboard.jsx";
 import History from "../pages/History.jsx";
+import Home from "../pages/Home.jsx";
+import ImportPdf from "../pages/ImportPdf.jsx";
 import InterviewRoom from "../pages/InterviewRoom.jsx";
 import Login from "../pages/Login.jsx";
+import MyQuestions from "../pages/MyQuestions.jsx";
 import NotFound from "../pages/NotFound.jsx";
 import Register from "../pages/Register.jsx";
 import Review from "../pages/Review.jsx";
+import AdminRoute from "./AdminRoute.jsx";
 import ProtectedRoute from "./ProtectedRoute.jsx";
-import MyQuestions from "../pages/MyQuestions.jsx";
 
 const router = createBrowserRouter([
   {
@@ -19,11 +22,22 @@ const router = createBrowserRouter([
       {
         element: <ProtectedRoute />,
         children: [
-          { index: true, element: <Dashboard /> },
-          { path: "history", element: <History /> },
+          {
+            element: <AppShell />,
+            children: [
+              { index: true, element: <Home /> },
+              { path: "history", element: <History /> },
+              {
+                element: <AdminRoute />,
+                children: [
+                  { path: "my-questions", element: <MyQuestions /> },
+                  { path: "pdf-import", element: <ImportPdf /> },
+                ],
+              },
+            ],
+          },
           { path: "interview/:id", element: <InterviewRoom /> },
           { path: "interview/:id/review", element: <Review /> },
-          { path: "my-questions", element: <MyQuestions /> },
         ],
       },
       { path: "login", element: <Login /> },

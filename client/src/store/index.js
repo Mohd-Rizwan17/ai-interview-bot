@@ -2,10 +2,11 @@ import { combineReducers, configureStore, isAnyOf } from "@reduxjs/toolkit";
 import { setSessionEndedHandler } from "../api/axios.js";
 import miniProjectReducer from "../features/miniProject/miniProjectSlice.js";
 import authReducer, { logoutUser, markSessionEnded } from "./authSlice.js";
+import customQuestionReducer from "./customQuestionSlice.js";
 import historyReducer from "./historySlice.js";
 import interviewReducer from "./interviewSlice.js";
 import reviewReducer from "./reviewSlice.js";
-import customQuestionReducer from "./customQuestionSlice.js";
+import selectionReducer from "./selectionSlice.js";
 
 const appReducer = combineReducers({
   auth: authReducer,
@@ -14,6 +15,7 @@ const appReducer = combineReducers({
   review: reviewReducer,
   miniProject: miniProjectReducer,
   customQuestions: customQuestionReducer,
+  selection: selectionReducer,
 });
 
 const isLoggedOut = isAnyOf(

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router";
 import CustomQuestionForm from "../components/CustomQuestionForm.jsx";
 import CustomQuestionRow from "../components/CustomQuestionRow.jsx";
 import Notice from "../components/Notice.jsx";
@@ -70,9 +69,9 @@ const MyQuestions = () => {
 
   return (
     <main className="mx-auto min-h-screen max-w-3xl px-4 py-8">
-      <Link to="/" className="text-sm text-muted">
+      {/* <Link to="/" className="text-sm text-muted">
         ← Dashboard
-      </Link>
+      </Link> */}
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <div>

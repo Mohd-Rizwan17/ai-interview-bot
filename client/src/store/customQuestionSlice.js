@@ -16,6 +16,18 @@ export const fetchCustomQuestions = createAsyncThunk(
   },
 );
 
+export const fetchCustomQuestionCounts = createAsyncThunk(
+  "customQuestions/fetchCounts",
+  async (_, { rejectWithValue }) => {
+    try {
+      const { data } = await api.get("/custom-questions/counts");
+      return data.counts;
+    } catch (error) {
+      return rejectWithValue(messageOf(error));
+    }
+  },
+);
+
 export const createCustomQuestion = createAsyncThunk(
   "customQuestions/create",
   async (payload, { rejectWithValue }) => {
@@ -61,6 +73,7 @@ export const deleteCustomQuestion = createAsyncThunk(
 
 const initialState = {
   items: [],
+  counts: null,
   loaded: false,
   error: null,
   busy: false,
@@ -86,6 +99,9 @@ const customQuestionSlice = createSlice({
       })
       .addCase(fetchCustomQuestions.rejected, (state, action) => {
         state.error = action.payload ?? "Something went wrong";
+      })
+      .addCase(fetchCustomQuestionCounts.fulfilled, (state, action) => {
+        state.counts = action.payload;
       })
       .addCase(createCustomQuestion.fulfilled, (state, action) => {
         state.items.unshift(action.payload);
