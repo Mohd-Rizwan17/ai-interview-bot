@@ -83,16 +83,20 @@ export const buildStats = (interviews) => {
         date: item.createdAt,
       })),
     byRound,
-    recent: interviews.slice(0, RECENT_LIMIT).map((item) => ({
-      _id: item._id,
-      title: item.title,
-      status: item.status,
-      difficulty: item.difficulty,
-      percent: hasScore(item)
-        ? toPercent(item.obtainedMarks, item.totalMarks)
-        : null,
-      createdAt: item.createdAt,
-    })),
+    recent: interviews.slice(0, RECENT_LIMIT).map((item) => {
+      const scored = hasScore(item);
+
+      return {
+        _id: item._id,
+        title: item.title,
+        status: item.status,
+        difficulty: item.difficulty,
+        percent: scored ? toPercent(item.obtainedMarks, item.totalMarks) : null,
+        obtainedMarks: scored ? item.obtainedMarks : null,
+        totalMarks: scored ? item.totalMarks : null,
+        createdAt: item.createdAt,
+      };
+    }),
   };
 };
 

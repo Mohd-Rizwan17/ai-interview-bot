@@ -19,6 +19,8 @@ const ROUND_TITLES = Object.fromEntries(
   ROUNDS.map((round) => [round.key, round.title]),
 );
 
+const sectionClass = "rounded-xl border border-line bg-panel p-6";
+
 const roundValue = (round) => (round ? round.title : "—");
 
 const roundNote = (round, fallback) =>
@@ -65,9 +67,32 @@ const Dashboard = () => {
     }
   };
 
-  const renderStats = () => {
-    if (!data) {
-      return (
+  return (
+    <main className="mx-auto max-w-5xl px-4 py-8">
+      <header>
+        <h1 className="text-2xl font-semibold">Hi, {firstName}</h1>
+        <p className="text-sm text-muted">Your progress and performance.</p>
+      </header>
+
+      {active && (
+        <section className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-accent bg-panel p-4">
+          <div>
+            <p className="text-xs uppercase tracking-wide text-accent">
+              Interview in progress
+            </p>
+            <p className="mt-1 font-semibold">{active.title}</p>
+            <p className="text-sm text-muted">{active.progressPercent}% done</p>
+          </div>
+          <Link
+            to={`/interview/${active._id}`}
+            className="rounded-md bg-accent px-4 py-2 font-semibold text-ground"
+          >
+            Continue
+          </Link>
+        </section>
+      )}
+
+      {!data && (
         <p
           role={stats.error ? "alert" : "status"}
           className={`mt-6 text-sm ${stats.error ? "text-danger" : "text-muted"}`}
@@ -76,11 +101,9 @@ const Dashboard = () => {
             ? `Cannot load stats: ${stats.error}`
             : "Loading stats..."}
         </p>
-      );
-    }
+      )}
 
-    return (
-      <>
+      {data && (
         <section
           aria-label="Your stats"
           className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
@@ -108,129 +131,99 @@ const Dashboard = () => {
             tone={data.weakestRound ? "text-warn" : "text-ink"}
           />
         </section>
-
-        <section className="mt-6 rounded-xl border border-line bg-panel p-6">
-          <h2 className="text-lg font-semibold">Score trend</h2>
-          <TrendChart points={data.trend} />
-        </section>
-      </>
-    );
-  };
-
-  return (
-    <main className="mx-auto max-w-5xl px-4 py-8">
-      <header>
-        <h1 className="text-2xl font-semibold">Hi, {firstName}</h1>
-        <p className="text-sm text-muted">
-          Pick rounds from the sidebar and start a mock interview.
-        </p>
-      </header>
-
-      {active && (
-        <section className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-accent bg-panel p-4">
-          <div>
-            <p className="text-xs uppercase tracking-wide text-accent">
-              Interview in progress
-            </p>
-            <p className="mt-1 font-semibold">{active.title}</p>
-            <p className="text-sm text-muted">{active.progressPercent}% done</p>
-          </div>
-          <Link
-            to={`/interview/${active._id}`}
-            className="rounded-md bg-accent px-4 py-2 font-semibold text-ground"
-          >
-            Continue
-          </Link>
-        </section>
       )}
 
-      {renderStats()}
-
-      <section className="mt-6 rounded-xl border border-line bg-panel p-6">
-        <h2 className="text-lg font-semibold">Start interview</h2>
-        <p className="mt-3 text-sm text-muted">Difficulty</p>
-        <div className="mt-2 flex gap-2">
-          {DIFFICULTIES.map((level) => (
-            <button
-              key={level}
-              type="button"
-              onClick={() => dispatch(setDifficulty(level))}
-              aria-pressed={difficulty === level}
-              className={`rounded-md border px-4 py-2 text-sm capitalize ${
-                difficulty === level
-                  ? "border-accent text-accent"
-                  : "border-line text-muted"
-              }`}
-            >
-              {level}
-            </button>
-          ))}
-        </div>
-
-        {hasMiniProject && (
-          <StackPicker
-            value={projectStack}
-            onChange={(stack) => dispatch(setProjectStack(stack))}
-          />
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        {data && (
+          <section className={sectionClass}>
+            <h2 className="text-lg font-semibold">Score trend</h2>
+            <TrendChart points={data.trend} />
+          </section>
         )}
 
-        <p className="mt-6 text-sm text-muted">
-          {selected.length === 0
-            ? "Select at least one round from the sidebar."
-            : `${title} · ${selected.length} round${selected.length > 1 ? "s" : ""} · up to 10 questions each`}
-        </p>
-
-        {hasNoCustomQuestions && (
-          <p role="status" className="mt-3 text-sm text-warn">
-            No {difficulty} questions in My Questions yet. Choose another
-            difficulty or remove that round.
-          </p>
-        )}
-
-        {error && (
-          <p role="alert" className="mt-3 text-sm text-danger">
-            {error}
-          </p>
-        )}
-
-        <button
-          type="button"
-          onClick={handleStart}
-          disabled={
-            selected.length === 0 ||
-            isStarting ||
-            hasNoCustomQuestions ||
-            (hasMiniProject && !projectStack)
-          }
-          className="mt-4 w-full rounded-md bg-accent px-4 py-2 font-semibold text-ground disabled:opacity-60 sm:w-auto"
+        <section
+          className={`rounded-xl border border-accent bg-panel p-6 ${data ? "" : "lg:col-span-2"}`}
         >
-          {isStarting ? "Preparing questions..." : "Start Interview"}
-        </button>
-        <p className={`mt-3 text-xs ${active ? "text-warn" : "text-muted"}`}>
-          {active
-            ? `Starting a new interview will end "${active.title}" and mark it incomplete.`
-            : "Starting a new interview ends any interview already in progress."}
-        </p>
-      </section>
+          <h2 className="text-lg font-semibold">Start interview</h2>
+          <p className="mt-1 text-sm text-muted">
+            {selected.length === 0
+              ? "Select at least one round from the sidebar."
+              : `${title} · ${selected.length} round${selected.length > 1 ? "s" : ""} · up to 10 questions each`}
+          </p>
 
-      {data && (
-        <div className="mt-6 grid gap-6 lg:grid-cols-2">
-          <section className="rounded-xl border border-line bg-panel p-6">
-            <h2 className="text-lg font-semibold">Performance by round</h2>
-            <RoundBars rounds={data.byRound} />
-          </section>
+          <p className="mt-4 text-sm text-muted">Difficulty</p>
+          <div className="mt-2 flex gap-2">
+            {DIFFICULTIES.map((level) => (
+              <button
+                key={level}
+                type="button"
+                onClick={() => dispatch(setDifficulty(level))}
+                aria-pressed={difficulty === level}
+                className={`rounded-md border px-4 py-2 text-sm capitalize ${
+                  difficulty === level
+                    ? "border-accent text-accent"
+                    : "border-line text-muted"
+                }`}
+              >
+                {level}
+              </button>
+            ))}
+          </div>
 
-          <section className="rounded-xl border border-line bg-panel p-6">
-            <div className="flex items-baseline justify-between gap-3">
+          {hasMiniProject && (
+            <StackPicker
+              value={projectStack}
+              onChange={(stack) => dispatch(setProjectStack(stack))}
+            />
+          )}
+
+          {hasNoCustomQuestions && (
+            <p role="status" className="mt-4 text-sm text-warn">
+              No {difficulty} questions in My Questions yet. Choose another
+              difficulty or remove that round.
+            </p>
+          )}
+
+          {error && (
+            <p role="alert" className="mt-4 text-sm text-danger">
+              {error}
+            </p>
+          )}
+
+          <button
+            type="button"
+            onClick={handleStart}
+            disabled={
+              selected.length === 0 ||
+              isStarting ||
+              hasNoCustomQuestions ||
+              (hasMiniProject && !projectStack)
+            }
+            className="mt-6 w-full rounded-md bg-accent px-4 py-2 font-semibold text-ground disabled:opacity-60"
+          >
+            {isStarting ? "Preparing questions..." : "Start Interview"}
+          </button>
+          <p className={`mt-3 text-xs ${active ? "text-warn" : "text-muted"}`}>
+            {active
+              ? `Starting a new interview will end "${active.title}" and mark it incomplete.`
+              : "Starting a new interview ends any interview already in progress."}
+          </p>
+        </section>
+
+        {data && (
+          <>
+            <section className={sectionClass}>
+              <h2 className="text-lg font-semibold">Performance by round</h2>
+              <RoundBars rounds={data.byRound} />
+            </section>
+
+            <section className={sectionClass}>
               <h2 className="text-lg font-semibold">Recent interviews</h2>
-              <Link to="/history" className="text-sm text-accent">
-                View all
-              </Link>
-            </div>
-            <RecentList interviews={data.recent} />
-          </section>
-        </div>
-      )}
+              <RecentList interviews={data.recent} />
+            </section>
+          </>
+        )}
+      </div>
     </main>
   );
 };

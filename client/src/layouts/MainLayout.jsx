@@ -11,7 +11,7 @@ const MainLayout = () => {
   }, [dispatch]);
 
   return (
-    <div className="min-h-screen bg-ground text-ink">
+    <div className="min-h-screen text-ink">
       <Outlet />
     </div>
   );

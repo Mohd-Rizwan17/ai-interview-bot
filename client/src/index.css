@@ -11,6 +11,9 @@
   --color-danger: #f87171;
   --font-sans: "Space Grotesk", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
 }
 
 :root {
@@ -20,6 +23,12 @@
 body {
   margin: 0;
   background-color: var(--color-ground);
+  background-image: radial-gradient(
+    ellipse 70% 260px at 50% 0%,
+    rgba(232, 237, 243, 0.08),
+    transparent
+  );
+  background-repeat: no-repeat;
   color: var(--color-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -28,4 +37,68 @@ body {
 :focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
+}
+
+@layer components {
+  button,
+  a {
+    transition:
+      transform 120ms ease-out,
+      box-shadow 150ms ease-out,
+      background-color 150ms ease-out,
+      border-color 150ms ease-out,
+      color 150ms ease-out,
+      opacity 150ms ease-out;
+  }
+
+  .bg-panel.rounded-xl {
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  }
+
+  button.bg-accent:not(:disabled),
+  a.bg-accent {
+    box-shadow: 0 0 24px rgba(182, 242, 74, 0.22);
+  }
+
+  button.bg-accent:not(:disabled):hover,
+  a.bg-accent:hover {
+    box-shadow: 0 0 30px rgba(182, 242, 74, 0.3);
+  }
+
+  :is(
+      button.bg-accent,
+      a.bg-accent,
+      button.border-accent,
+      main button.border,
+      main a.border
+    ):not(:disabled):hover {
+    transform: translateY(-1px);
+  }
+
+  :is(
+      button.bg-accent,
+      a.bg-accent,
+      button.border-accent,
+      main button.border,
+      main a.border
+    ):not(:disabled):active {
+    transform: scale(0.97);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  button:hover,
+  button:active,
+  a:hover,
+  a:active {
+    transform: none !important;
+  }
 }

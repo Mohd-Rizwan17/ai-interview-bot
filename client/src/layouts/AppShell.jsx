@@ -8,18 +8,35 @@ const AppShell = () => {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
   const isAdmin = user.role === "admin";
+  const firstName = user.fullName.split(" ")[0];
 
   return (
     <div className="flex min-h-screen flex-col lg:h-screen lg:flex-row">
       <aside className="flex flex-col border-b border-line bg-panel lg:w-64 lg:shrink-0 lg:overflow-y-auto lg:border-b-0 lg:border-r">
-        <p className="px-4 py-4 text-sm font-semibold">AI Interview Bot</p>
+        <div className="flex items-center gap-2 px-4 py-4">
+          <span
+            aria-hidden="true"
+            className="h-6 w-6 shrink-0 rounded-md bg-accent"
+          />
+          <p className="truncate text-sm font-semibold">AI Interview Bot</p>
+          {isAdmin && (
+            <span className="rounded-full border border-warn px-2 py-0.5 text-xs text-warn">
+              Admin
+            </span>
+          )}
+        </div>
 
         {isAdmin ? <AdminNav /> : <UserNav />}
 
         <div className="mt-auto flex items-center justify-between gap-2 border-t border-line p-4">
-          <div className="min-w-0">
-            <p className="truncate text-sm">{user.fullName}</p>
-            <p className="text-xs capitalize text-muted">{user.role}</p>
+          <div className="flex min-w-0 items-center gap-3">
+            <span
+              aria-hidden="true"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-line text-sm font-semibold"
+            >
+              {firstName[0].toUpperCase()}
+            </span>
+            <p className="truncate text-sm">{firstName}</p>
           </div>
           <button
             type="button"

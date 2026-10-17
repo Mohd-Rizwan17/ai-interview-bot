@@ -59,6 +59,10 @@ const UserNav = () => {
           </button>
         </div>
       </div>
+      
+      <p className="px-1 text-xs text-muted">
+        Rounds run in the order you pick them.
+      </p>
 
       <ul className="flex flex-col gap-0.5">
         {ROUNDS.map((round) => (

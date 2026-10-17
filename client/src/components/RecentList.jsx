@@ -17,8 +17,10 @@ const targetFor = (interview) => {
   return `/interview/${interview._id}/review`;
 };
 
-const Row = ({ interview }) => {
+const Row = ({ interview, hasLink }) => {
   const status = STATUS[interview.status];
+  const hasScore = interview.percent !== null;
+  const showStatus = interview.status !== "completed";
 
   return (
     <div className="flex items-center justify-between gap-3">
@@ -30,9 +32,22 @@ const Row = ({ interview }) => {
         </p>
       </div>
       <div className="shrink-0 text-right">
-        <p className={`text-xs font-semibold ${status.tone}`}>{status.label}</p>
-        {interview.percent !== null && (
-          <p className="font-mono text-sm text-muted">{interview.percent}%</p>
+        {hasScore && (
+          <p className="font-mono text-sm">
+            {interview.obtainedMarks} / {interview.totalMarks}
+          </p>
+        )}
+        {showStatus && (
+          <p className={`text-xs font-semibold ${status.tone}`}>
+            {status.label}
+          </p>
+        )}
+        {hasLink && (
+          <p className="text-xs text-accent">
+            {interview.status === "in_progress"
+              ? "Continue →"
+              : "View review →"}
+          </p>
         )}
       </div>
     </div>
@@ -45,25 +60,30 @@ const RecentList = ({ interviews }) => {
   }
 
   return (
-    <ul className="mt-4 flex flex-col divide-y divide-line">
-      {interviews.map((interview) => {
-        const target = targetFor(interview);
+    <>
+      <ul className="mt-4 flex flex-col divide-y divide-line">
+        {interviews.map((interview) => {
+          const target = targetFor(interview);
 
-        return (
-          <li key={interview._id} className="py-3 first:pt-0 last:pb-0">
-            {target ? (
-              <Link to={target} className="block hover:opacity-80">
-                <Row interview={interview} />
-              </Link>
-            ) : (
-              <div className="opacity-70">
-                <Row interview={interview} />
-              </div>
-            )}
-          </li>
-        );
-      })}
-    </ul>
+          return (
+            <li key={interview._id} className="py-3 first:pt-0 last:pb-0">
+              {target ? (
+                <Link to={target} className="block hover:opacity-80">
+                  <Row interview={interview} hasLink />
+                </Link>
+              ) : (
+                <div className="opacity-70">
+                  <Row interview={interview} hasLink={false} />
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+      <Link to="/history" className="mt-4 block text-sm text-accent">
+        View all in History →
+      </Link>
+    </>
   );
 };
 
