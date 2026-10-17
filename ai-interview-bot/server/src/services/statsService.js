@@ -1,7 +1,14 @@
+import {
+  CUSTOM_QUESTION_FORMATS,
+  DIFFICULTIES,
+  QUESTIONS_PER_ROUND,
+} from "../constants/interview.js";
+import { CustomQuestion } from "../models/CustomQuestion.js";
 import { Interview } from "../models/Interview.js";
 
 const TREND_LIMIT = 8;
 const RECENT_LIMIT = 5;
+const IMPORT_LIMIT = 5;
 const SCORE_FIELDS =
   "title status difficulty totalMarks obtainedMarks createdAt rounds";
 
@@ -96,4 +103,89 @@ export const getUserStats = async (userId) => {
     .lean();
 
   return buildStats(interviews);
+};
+
+const countQuestions = (rows) => {
+  const byDifficulty = Object.fromEntries(
+    DIFFICULTIES.map((level) => [level, 0]),
+  );
+  const byFormat = Object.fromEntries(
+    CUSTOM_QUESTION_FORMATS.map((format) => [format, 0]),
+  );
+
+  rows.forEach(({ _id, count }) => {
+    if (_id.difficulty in byDifficulty) byDifficulty[_id.difficulty] += count;
+    if (_id.format in byFormat) byFormat[_id.format] += count;
+  });
+
+  return {
+    total: Object.values(byDifficulty).reduce((sum, value) => sum + value, 0),
+    ...byDifficulty,
+    ...byFormat,
+  };
+};
+
+const toImport = ({ _id, count, importedAt, difficulties }) => ({
+  source: _id,
+  count,
+  importedAt,
+  difficulty: difficulties.length === 1 ? difficulties[0] : "mixed",
+});
+
+const findNeedsMore = (questions) =>
+  DIFFICULTIES.map((difficulty) => ({
+    difficulty,
+    count: questions[difficulty],
+    needed: QUESTIONS_PER_ROUND - questions[difficulty],
+  }))
+    .filter((item) => item.needed > 0)
+    .sort((first, second) => first.count - second.count);
+
+export const buildAdminStats = ({
+  questionRows,
+  importRows,
+  scored,
+  interviewCount,
+}) => {
+  const questions = countQuestions(questionRows);
+
+  return {
+    questions,
+    recentImports: importRows.map(toImport),
+    usersByRound: buildByRound(scored),
+    needsMore: findNeedsMore(questions),
+    totals: { interviews: interviewCount },
+  };
+};
+
+export const getAdminStats = async () => {
+  const [questionRows, importRows, scored, interviewCount] = await Promise.all([
+    CustomQuestion.aggregate([
+      {
+        $group: {
+          _id: { difficulty: "$difficulty", format: "$format" },
+          count: { $sum: 1 },
+        },
+      },
+    ]),
+    CustomQuestion.aggregate([
+      { $match: { source: { $type: "string", $ne: "" } } },
+      {
+        $group: {
+          _id: "$source",
+          count: { $sum: 1 },
+          importedAt: { $max: "$createdAt" },
+          difficulties: { $addToSet: "$difficulty" },
+        },
+      },
+      { $sort: { importedAt: -1 } },
+      { $limit: IMPORT_LIMIT },
+    ]),
+    Interview.find({ status: "completed", totalMarks: { $gt: 0 } })
+      .select("rounds")
+      .lean(),
+    Interview.countDocuments({ status: { $ne: "in_progress" } }),
+  ]);
+
+  return buildAdminStats({ questionRows, importRows, scored, interviewCount });
 };
