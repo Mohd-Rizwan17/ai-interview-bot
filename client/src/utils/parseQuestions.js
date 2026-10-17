@@ -218,12 +218,28 @@ const buildDraft = (question, keyLetter, hint) => {
   return { ...draft, issues };
 };
 
-export const parseQuestions = (rawText) => {
-  const lines = stripPageNoise(rawText.replace(/\r/g, ""))
+const LEVEL_PATTERNS = [
+  ["easy", /\b(beginner|easy)\b/i],
+  ["medium", /\b(intermediate|medium)\b/i],
+  ["hard", /\b(advanced|hard|expert)\b/i],
+];
+
+const toLines = (rawText) =>
+  stripPageNoise(rawText.replace(/\r/g, ""))
     .split("\n")
     .map((line) => line.trim())
     .filter(Boolean);
-  const sections = splitSections(lines);
+
+export const detectDifficulty = (rawText) => {
+  const lines = toLines(rawText);
+  const firstQuestion = lines.findIndex((line) => QUESTION_LINE.test(line));
+  const intro = lines.slice(0, Math.max(firstQuestion, 0)).join(" ");
+
+  return LEVEL_PATTERNS.find(([, pattern]) => pattern.test(intro))?.[0] ?? null;
+};
+
+export const parseQuestions = (rawText) => {
+  const sections = splitSections(toLines(rawText));
   const answers = parseKey(sections.key);
   const hints = parseHints(sections.hints);
 
@@ -236,12 +252,14 @@ export const parseQuestions = (rawText) => {
   );
 };
 
-export const draftToPayload = (draft) => ({
+export const draftToPayload = (draft, source) => ({
   format: "mcq",
+  difficulty: draft.difficulty,
   topic: draft.topic.trim(),
   question: draft.question.trim(),
   options: draft.options.map((option) => option.trim()),
   correctOption: draft.correctOption,
   hint: draft.hint.trim(),
   explanation: draft.explanation.trim(),
+  ...(source && { source }),
 });

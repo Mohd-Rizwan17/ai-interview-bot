@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { parseQuestions } from "../utils/parseQuestions.js";
+import { detectDifficulty, parseQuestions } from "../utils/parseQuestions.js";
 import ImportReview from "./ImportReview.jsx";
 
 const PREVIEW_CHARS = 200000;
@@ -31,6 +31,7 @@ const PdfImport = ({ onClose }) => {
         text,
         pageCount,
         drafts: parseQuestions(text),
+        detected: detectDifficulty(text),
       });
     } catch (readError) {
       setError(
@@ -92,6 +93,9 @@ const PdfImport = ({ onClose }) => {
             <ImportReview
               key={result.id}
               initialDrafts={result.drafts}
+              defaultDifficulty={result.detected ?? "medium"}
+              isDetected={Boolean(result.detected)}
+              source={result.name.slice(0, 120)}
               onDone={onClose}
             />
           )}

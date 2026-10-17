@@ -1,15 +1,36 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { DIFFICULTIES } from "../constants/rounds.js";
 import { importCustomQuestions } from "../store/customQuestionSlice.js";
 import { draftIssues, draftToPayload } from "../utils/parseQuestions.js";
 
-const MAX_QUESTIONS = 50;
+const MAX_QUESTIONS = 200;
 const LETTERS = ["A", "B", "C", "D"];
 
 const inputClass =
   "w-full rounded-md border border-line bg-panel px-3 py-2 text-sm text-ink placeholder:text-muted";
 
 const normalize = (text) => text.trim().toLowerCase().replace(/\s+/g, " ");
+
+const DifficultyButtons = ({ isActive, onSelect }) => (
+  <div className="mt-2 flex gap-2">
+    {DIFFICULTIES.map((level) => (
+      <button
+        key={level}
+        type="button"
+        onClick={() => onSelect(level)}
+        aria-pressed={isActive(level)}
+        className={`rounded-md border px-4 py-2 text-sm capitalize ${
+          isActive(level)
+            ? "border-accent text-accent"
+            : "border-line text-muted"
+        }`}
+      >
+        {level}
+      </button>
+    ))}
+  </div>
+);
 
 const DraftEditor = ({ draft, onChange, onClose }) => {
   const fieldId = (name) => `${draft.id}-${name}`;
@@ -24,7 +45,16 @@ const DraftEditor = ({ draft, onChange, onClose }) => {
 
   return (
     <div className="mt-3 border-t border-line pt-3">
-      <label htmlFor={fieldId("topic")} className="block text-xs text-muted">
+      <p className="text-xs text-muted">Difficulty</p>
+      <DifficultyButtons
+        isActive={(level) => draft.difficulty === level}
+        onSelect={(level) => onChange({ difficulty: level })}
+      />
+
+      <label
+        htmlFor={fieldId("topic")}
+        className="mt-3 block text-xs text-muted"
+      >
         Topic
       </label>
       <input
@@ -117,7 +147,13 @@ const DraftEditor = ({ draft, onChange, onClose }) => {
   );
 };
 
-const ImportReview = ({ initialDrafts, onDone }) => {
+const ImportReview = ({
+  initialDrafts,
+  defaultDifficulty,
+  isDetected,
+  source,
+  onDone,
+}) => {
   const dispatch = useDispatch();
   const { items, busy } = useSelector((state) => state.customQuestions);
   const savedQuestions = new Set(items.map((item) => normalize(item.question)));
@@ -125,7 +161,9 @@ const ImportReview = ({ initialDrafts, onDone }) => {
   const isDuplicate = (draft) => savedQuestions.has(normalize(draft.question));
   const isReady = (draft) => draft.issues.length === 0 && !isDuplicate(draft);
 
-  const [drafts, setDrafts] = useState(initialDrafts);
+  const [drafts, setDrafts] = useState(() =>
+    initialDrafts.map((draft) => ({ ...draft, difficulty: defaultDifficulty })),
+  );
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState(null);
   const [selected, setSelected] = useState(
@@ -175,6 +213,12 @@ const ImportReview = ({ initialDrafts, onDone }) => {
     );
   };
 
+  const setAllDifficulty = (level) => {
+    setDrafts((current) =>
+      current.map((draft) => ({ ...draft, difficulty: level })),
+    );
+  };
+
   const handleSave = async () => {
     setError(null);
 
@@ -182,7 +226,7 @@ const ImportReview = ({ initialDrafts, onDone }) => {
       importCustomQuestions(
         chosen.map((draft) => ({
           id: draft.id,
-          payload: draftToPayload(draft),
+          payload: draftToPayload(draft, source),
         })),
       ),
     );
@@ -227,7 +271,18 @@ const ImportReview = ({ initialDrafts, onDone }) => {
         </p>
       )}
 
-      <div className="mt-3 flex flex-wrap gap-2">
+      <p className="mt-4 text-sm text-muted">
+        Difficulty for all questions
+        {isDetected && ` (detected in the PDF: ${defaultDifficulty})`}
+      </p>
+      <DifficultyButtons
+        isActive={(level) =>
+          drafts.every((draft) => draft.difficulty === level)
+        }
+        onSelect={setAllDifficulty}
+      />
+
+      <div className="mt-4 flex flex-wrap gap-2">
         <button
           type="button"
           onClick={selectAllReady}
@@ -269,7 +324,8 @@ const ImportReview = ({ initialDrafts, onDone }) => {
                 <div className="min-w-0 flex-1">
                   <p className="font-mono text-xs text-muted">
                     Q{draft.number}
-                    {draft.topic && ` · ${draft.topic}`}
+                    {draft.topic && ` · ${draft.topic}`} ·{" "}
+                    <span className="capitalize">{draft.difficulty}</span>
                   </p>
                   <p className="mt-1">{draft.question}</p>
                   <ul className="mt-2 flex flex-col gap-1">
