@@ -1,6 +1,10 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router";
+import RecentList from "../components/RecentList.jsx";
+import RoundBars from "../components/RoundBars.jsx";
+import StatCard from "../components/StatCard.jsx";
+import TrendChart from "../components/TrendChart.jsx";
 import { DIFFICULTIES, ROUNDS } from "../constants/rounds.js";
 import StackPicker from "../features/miniProject/components/StackPicker.jsx";
 import { fetchActiveInterview } from "../store/historySlice.js";
@@ -9,10 +13,16 @@ import {
   startInterview,
 } from "../store/interviewSlice.js";
 import { setDifficulty, setProjectStack } from "../store/selectionSlice.js";
+import { fetchStats } from "../store/statsSlice.js";
 
 const ROUND_TITLES = Object.fromEntries(
   ROUNDS.map((round) => [round.key, round.title]),
 );
+
+const roundValue = (round) => (round ? round.title : "—");
+
+const roundNote = (round, fallback) =>
+  round ? `${round.percent}% average` : fallback;
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -20,6 +30,7 @@ const Dashboard = () => {
   const user = useSelector((state) => state.auth.user);
   const active = useSelector((state) => state.history.active);
   const counts = useSelector((state) => state.customQuestions.counts);
+  const stats = useSelector((state) => state.stats);
   const { status, error } = useSelector((state) => state.interview);
   const {
     rounds: selected,
@@ -34,10 +45,12 @@ const Dashboard = () => {
     selected.includes("my-questions") &&
     counts !== null &&
     counts[difficulty] === 0;
+  const data = stats.data;
 
   useEffect(() => {
     dispatch(clearInterviewError());
     dispatch(fetchActiveInterview());
+    dispatch(fetchStats());
   }, [dispatch]);
 
   const handleStart = async () => {
@@ -52,8 +65,60 @@ const Dashboard = () => {
     }
   };
 
+  const renderStats = () => {
+    if (!data) {
+      return (
+        <p
+          role={stats.error ? "alert" : "status"}
+          className={`mt-6 text-sm ${stats.error ? "text-danger" : "text-muted"}`}
+        >
+          {stats.error
+            ? `Cannot load stats: ${stats.error}`
+            : "Loading stats..."}
+        </p>
+      );
+    }
+
+    return (
+      <>
+        <section
+          aria-label="Your stats"
+          className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+        >
+          <StatCard
+            label="Interviews"
+            value={data.interviews}
+            note="Finished or ended"
+          />
+          <StatCard
+            label="Average score"
+            value={data.averageScore === null ? "—" : `${data.averageScore}%`}
+            note="Completed interviews"
+            tone="text-accent"
+          />
+          <StatCard
+            label="Best round"
+            value={roundValue(data.bestRound)}
+            note={roundNote(data.bestRound, "No data yet")}
+          />
+          <StatCard
+            label="Needs work"
+            value={roundValue(data.weakestRound)}
+            note={roundNote(data.weakestRound, "Needs 2 graded rounds")}
+            tone={data.weakestRound ? "text-warn" : "text-ink"}
+          />
+        </section>
+
+        <section className="mt-6 rounded-xl border border-line bg-panel p-6">
+          <h2 className="text-lg font-semibold">Score trend</h2>
+          <TrendChart points={data.trend} />
+        </section>
+      </>
+    );
+  };
+
   return (
-    <main className="mx-auto max-w-3xl px-4 py-8">
+    <main className="mx-auto max-w-5xl px-4 py-8">
       <header>
         <h1 className="text-2xl font-semibold">Hi, {firstName}</h1>
         <p className="text-sm text-muted">
@@ -79,9 +144,12 @@ const Dashboard = () => {
         </section>
       )}
 
-      <section className="mt-8 rounded-xl border border-line bg-panel p-6">
-        <h2 className="text-lg font-semibold">Difficulty</h2>
-        <div className="mt-3 flex gap-2">
+      {renderStats()}
+
+      <section className="mt-6 rounded-xl border border-line bg-panel p-6">
+        <h2 className="text-lg font-semibold">Start interview</h2>
+        <p className="mt-3 text-sm text-muted">Difficulty</p>
+        <div className="mt-2 flex gap-2">
           {DIFFICULTIES.map((level) => (
             <button
               key={level}
@@ -144,6 +212,25 @@ const Dashboard = () => {
             : "Starting a new interview ends any interview already in progress."}
         </p>
       </section>
+
+      {data && (
+        <div className="mt-6 grid gap-6 lg:grid-cols-2">
+          <section className="rounded-xl border border-line bg-panel p-6">
+            <h2 className="text-lg font-semibold">Performance by round</h2>
+            <RoundBars rounds={data.byRound} />
+          </section>
+
+          <section className="rounded-xl border border-line bg-panel p-6">
+            <div className="flex items-baseline justify-between gap-3">
+              <h2 className="text-lg font-semibold">Recent interviews</h2>
+              <Link to="/history" className="text-sm text-accent">
+                View all
+              </Link>
+            </div>
+            <RecentList interviews={data.recent} />
+          </section>
+        </div>
+      )}
     </main>
   );
 };
