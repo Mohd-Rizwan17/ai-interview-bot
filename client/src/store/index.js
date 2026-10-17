@@ -8,6 +8,7 @@ import interviewReducer from "./interviewSlice.js";
 import reviewReducer from "./reviewSlice.js";
 import selectionReducer from "./selectionSlice.js";
 import statsReducer from "./statsSlice.js";
+import adminStatsReducer from "./adminStatsSlice.js";
 
 const appReducer = combineReducers({
   auth: authReducer,
@@ -18,6 +19,7 @@ const appReducer = combineReducers({
   customQuestions: customQuestionReducer,
   selection: selectionReducer,
   stats: statsReducer,
+  adminStats: adminStatsReducer,
 });
 
 const isLoggedOut = isAnyOf(

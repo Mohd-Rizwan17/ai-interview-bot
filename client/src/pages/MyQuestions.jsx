@@ -4,6 +4,7 @@ import CustomQuestionForm from "../components/CustomQuestionForm.jsx";
 import CustomQuestionRow from "../components/CustomQuestionRow.jsx";
 import Notice from "../components/Notice.jsx";
 import PdfImport from "../components/PdfImport.jsx";
+import { useSearchParams } from "react-router";
 import { DIFFICULTIES } from "../constants/rounds.js";
 import {
   clearActionError,
@@ -15,7 +16,10 @@ const FILTERS = ["all", ...DIFFICULTIES];
 
 const MyQuestions = () => {
   const dispatch = useDispatch();
-  const [showForm, setShowForm] = useState(false);
+    const [searchParams] = useSearchParams();
+    const [showForm, setShowForm] = useState(
+      () => searchParams.get("add") === "1",
+    );
   const [showImport, setShowImport] = useState(false);
   const [filter, setFilter] = useState("all");
   const { items, loaded, error, actionError } = useSelector(
