@@ -5,22 +5,29 @@ import CustomQuestionForm from "../components/CustomQuestionForm.jsx";
 import CustomQuestionRow from "../components/CustomQuestionRow.jsx";
 import Notice from "../components/Notice.jsx";
 import PdfImport from "../components/PdfImport.jsx";
+import { DIFFICULTIES } from "../constants/rounds.js";
 import {
   clearActionError,
   fetchCustomQuestions,
 } from "../store/customQuestionSlice.js";
 
-const MAX_QUESTIONS = 50;
+const MAX_QUESTIONS = 200;
+const FILTERS = ["all", ...DIFFICULTIES];
 
 const MyQuestions = () => {
   const dispatch = useDispatch();
   const [showForm, setShowForm] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [filter, setFilter] = useState("all");
   const { items, loaded, error, actionError } = useSelector(
     (state) => state.customQuestions,
   );
   const isFull = items.length >= MAX_QUESTIONS;
   const isPanelOpen = showForm || showImport;
+  const visible =
+    filter === "all"
+      ? items
+      : items.filter((question) => question.difficulty === filter);
 
   useEffect(() => {
     dispatch(fetchCustomQuestions());
@@ -29,6 +36,11 @@ const MyQuestions = () => {
       dispatch(clearActionError());
     };
   }, [dispatch]);
+
+  const countOf = (level) =>
+    level === "all"
+      ? items.length
+      : items.filter((question) => question.difficulty === level).length;
 
   const openForm = () => {
     dispatch(clearActionError());
@@ -91,8 +103,26 @@ const MyQuestions = () => {
         )}
       </div>
       <p className="text-sm text-muted">
-        These questions are used in the My Questions round.
+        These questions go into the My Questions round, by difficulty.
       </p>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        {FILTERS.map((level) => (
+          <button
+            key={level}
+            type="button"
+            onClick={() => setFilter(level)}
+            aria-pressed={filter === level}
+            className={`rounded-md border px-3 py-1 text-sm capitalize ${
+              filter === level
+                ? "border-accent text-accent"
+                : "border-line text-muted"
+            }`}
+          >
+            {level} <span className="font-mono">{countOf(level)}</span>
+          </button>
+        ))}
+      </div>
 
       {isFull && !isPanelOpen && (
         <p className="mt-2 text-sm text-warn">
@@ -115,11 +145,15 @@ const MyQuestions = () => {
 
       {showImport && <PdfImport onClose={() => setShowImport(false)} />}
 
-      {items.length === 0 ? (
-        <p className="mt-8 text-muted">No questions yet.</p>
+      {visible.length === 0 ? (
+        <p className="mt-8 text-muted">
+          {items.length === 0
+            ? "No questions yet."
+            : `No ${filter} questions yet.`}
+        </p>
       ) : (
         <ul className="mt-6 flex flex-col gap-3">
-          {items.map((question) => (
+          {visible.map((question) => (
             <li key={question._id}>
               <CustomQuestionRow question={question} />
             </li>

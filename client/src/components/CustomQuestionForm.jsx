@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { DIFFICULTIES } from "../constants/rounds.js";
 import { createCustomQuestion } from "../store/customQuestionSlice.js";
 
 const LETTERS = ["A", "B", "C", "D"];
@@ -18,6 +19,7 @@ const inputClass =
 
 const initialForm = {
   format: "mcq",
+  difficulty: "medium",
   topic: "",
   question: "",
   options: ["", "", "", ""],
@@ -79,6 +81,7 @@ const CustomQuestionForm = ({ onDone, onCancel }) => {
   const buildPayload = () => {
     const common = {
       format: form.format,
+      difficulty: form.difficulty,
       topic: form.topic.trim(),
       question: form.question.trim(),
       hint: form.hint.trim(),
@@ -125,6 +128,27 @@ const CustomQuestionForm = ({ onDone, onCancel }) => {
             }`}
           >
             {label}
+          </button>
+        ))}
+      </div>
+
+      <p className="mt-4 text-sm text-muted">
+        Difficulty (the question appears only in this level)
+      </p>
+      <div className="mt-2 flex gap-2">
+        {DIFFICULTIES.map((level) => (
+          <button
+            key={level}
+            type="button"
+            onClick={() => setField("difficulty", level)}
+            aria-pressed={form.difficulty === level}
+            className={`rounded-md border px-4 py-2 text-sm capitalize ${
+              form.difficulty === level
+                ? "border-accent text-accent"
+                : "border-line text-muted"
+            }`}
+          >
+            {level}
           </button>
         ))}
       </div>

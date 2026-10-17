@@ -26,6 +26,9 @@ const CustomQuestionRow = ({ question }) => {
         <span className="rounded-full border border-line px-2 py-1 text-muted">
           {FORMAT_LABELS[question.format]}
         </span>
+        <span className="rounded-full border border-line px-2 py-1 capitalize text-muted">
+          {question.difficulty}
+        </span>
         <span className="rounded-full border border-line px-2 py-1 text-muted">
           {question.topic}
         </span>
