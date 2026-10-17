@@ -2,9 +2,10 @@ import { Router } from "express";
 import {
   createCustomQuestion,
   deleteCustomQuestion,
+  getCustomQuestionCounts,
   listCustomQuestions,
 } from "../controllers/customQuestionController.js";
-import { protect } from "../middlewares/auth.js";
+import { adminOnly, protect } from "../middlewares/auth.js";
 import { validate } from "../middlewares/validate.js";
 import {
   customQuestionIdRule,
@@ -15,8 +16,21 @@ const router = Router();
 
 router.use(protect);
 
-router.post("/", customQuestionRules, validate, createCustomQuestion);
-router.get("/", listCustomQuestions);
-router.delete("/:id", customQuestionIdRule, validate, deleteCustomQuestion);
+router.get("/counts", getCustomQuestionCounts);
+router.post(
+  "/",
+  adminOnly,
+  customQuestionRules,
+  validate,
+  createCustomQuestion,
+);
+router.get("/", adminOnly, listCustomQuestions);
+router.delete(
+  "/:id",
+  adminOnly,
+  customQuestionIdRule,
+  validate,
+  deleteCustomQuestion,
+);
 
 export default router;

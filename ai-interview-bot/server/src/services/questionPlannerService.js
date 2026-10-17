@@ -30,13 +30,13 @@ const pickForRound = (key, difficulty) => {
   return [...matching, ...others].slice(0, QUESTIONS_PER_ROUND);
 };
 
-const pickCustomQuestions = async (userId) => {
-  const saved = await CustomQuestion.find({ user: userId }).lean();
+const pickCustomQuestions = async (difficulty) => {
+  const saved = await CustomQuestion.find({ difficulty }).lean();
 
   if (saved.length === 0) {
     throw new ApiError(
       400,
-      "Add your own questions before starting the My Questions round",
+      `No ${difficulty} questions are available in My Questions yet`,
     );
   }
 
@@ -48,8 +48,8 @@ const pickCustomQuestions = async (userId) => {
     }));
 };
 
-const pickForKey = async (key, difficulty, userId, projectStack) => {
-  if (key === "my-questions") return pickCustomQuestions(userId);
+const pickForKey = async (key, difficulty, projectStack) => {
+  if (key === "my-questions") return pickCustomQuestions(difficulty);
 
   if (key === "mini-project") {
     return [pickProjectQuestion(projectStack, difficulty)];
@@ -58,16 +58,11 @@ const pickForKey = async (key, difficulty, userId, projectStack) => {
   return pickForRound(key, difficulty);
 };
 
-export const pickQuestions = async (
-  keys,
-  difficulty,
-  userId,
-  projectStack = "web",
-) => {
+export const pickQuestions = async (keys, difficulty, projectStack = "web") => {
   const entries = await Promise.all(
     keys.map(async (key) => [
       key,
-      await pickForKey(key, difficulty, userId, projectStack),
+      await pickForKey(key, difficulty, projectStack),
     ]),
   );
 

@@ -1,6 +1,9 @@
 import mongoose from "mongoose";
 
-import { QUESTION_FORMATS } from "../constants/interview.js";
+import {
+  CUSTOM_QUESTION_FORMATS,
+  DIFFICULTIES,
+} from "../constants/interview.js";
 
 function isMcq() {
   return this.format === "mcq";
@@ -20,8 +23,19 @@ const customQuestionSchema = new mongoose.Schema(
 
     format: {
       type: String,
-      enum: QUESTION_FORMATS,
+      enum: CUSTOM_QUESTION_FORMATS,
       required: true,
+    },
+    difficulty: {
+      type: String,
+      enum: DIFFICULTIES,
+      required: true,
+    },
+
+    source: {
+      type: String,
+      trim: true,
+      maxlength: 120,
     },
 
     topic: {

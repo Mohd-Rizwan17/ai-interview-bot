@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import {
   DEFAULT_RETENTION_DAYS,
   RETENTION_OPTIONS,
+  USER_ROLES,
 } from "../constants/interview.js";
 
 const userSchema = new mongoose.Schema(
@@ -22,6 +23,7 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
     phone: { type: String, trim: true },
+    role: { type: String, enum: USER_ROLES, default: "user" },
     passwordHash: { type: String, required: true, select: false },
     historyRetentionDays: {
       type: Number,

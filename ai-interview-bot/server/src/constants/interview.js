@@ -42,6 +42,8 @@ export const ROUND_TITLES = {
 
 export const DIFFICULTIES = ["easy", "medium", "hard"];
 
+export const USER_ROLES = ["user", "admin"];
+
 export const INTERVIEW_STATUSES = [
   "in_progress",
   "completed",
@@ -78,7 +80,7 @@ export const CORRECT_THRESHOLD = 0.6;
 
 export const QUESTIONS_PER_ROUND = 10;
 
-export const MAX_CUSTOM_QUESTIONS = 50;
+export const MAX_CUSTOM_QUESTIONS = 200;
 
 export const GRACE_SEC = 5;
 

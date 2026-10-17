@@ -1,11 +1,27 @@
 import { body, param } from "express-validator";
-import { CUSTOM_QUESTION_FORMATS } from "../constants/interview.js";
+import {
+  CUSTOM_QUESTION_FORMATS,
+  DIFFICULTIES,
+} from "../constants/interview.js";
 
 const whenMcq = () => body("format").equals("mcq");
 const whenTheory = () => body("format").isIn(["practical", "descriptive"]);
 
 export const customQuestionRules = [
-  body("format").isIn(CUSTOM_QUESTION_FORMATS).withMessage("Choose a valid format"),
+  body("format")
+    .isIn(CUSTOM_QUESTION_FORMATS)
+    .withMessage("Choose a valid format"),
+  body("difficulty")
+    .isIn(DIFFICULTIES)
+    .withMessage("Choose a valid difficulty"),
+  body("source")
+    .optional()
+    .isString()
+    .withMessage("Source must be text")
+    .bail()
+    .trim()
+    .isLength({ max: 120 })
+    .withMessage("Source must be at most 120 characters"),
   body("question")
     .isString()
     .withMessage("Question is required")
