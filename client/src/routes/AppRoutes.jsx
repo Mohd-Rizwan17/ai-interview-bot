@@ -14,6 +14,7 @@ import Register from "../pages/Register.jsx";
 import Review from "../pages/Review.jsx";
 import AdminRoute from "./AdminRoute.jsx";
 import ProtectedRoute from "./ProtectedRoute.jsx";
+import Leaderboard from "../pages/Leaderboard.jsx";
 
 const router = createBrowserRouter([
   {
@@ -33,6 +34,7 @@ const router = createBrowserRouter([
                 children: [
                   { path: "my-questions", element: <MyQuestions /> },
                   { path: "pdf-import", element: <ImportPdf /> },
+                  { path: "leaderboard", element: <Leaderboard /> },
                 ],
               },
             ],

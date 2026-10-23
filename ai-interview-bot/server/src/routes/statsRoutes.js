@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  getLeaderboardStats,
   getMyStats,
   getOverviewStats,
 } from "../controllers/statsController.js";
@@ -11,5 +12,6 @@ router.use(protect);
 
 router.get("/me", getMyStats);
 router.get("/admin", adminOnly, getOverviewStats);
+router.get("/leaderboard", adminOnly, getLeaderboardStats);
 
 export default router;

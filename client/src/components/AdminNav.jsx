@@ -5,6 +5,7 @@ const AdminNav = () => (
     <NavItem to="/" end>
       Overview
     </NavItem>
+    <NavItem to="/leaderboard">Leaderboard</NavItem>
     <NavItem to="/my-questions">My Questions</NavItem>
     <NavItem to="/pdf-import">PDF import</NavItem>
   </nav>

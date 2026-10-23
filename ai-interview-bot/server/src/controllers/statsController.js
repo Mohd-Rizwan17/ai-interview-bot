@@ -1,4 +1,8 @@
-import { getAdminStats, getUserStats } from "../services/statsService.js";
+import {
+  getAdminStats,
+  getLeaderboard,
+  getUserStats,
+} from "../services/statsService.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 export const getMyStats = asyncHandler(async (req, res) => {
@@ -16,5 +20,14 @@ export const getOverviewStats = asyncHandler(async (req, res) => {
   res.json({
     success: true,
     stats,
+  });
+});
+
+export const getLeaderboardStats = asyncHandler(async (req, res) => {
+  const leaderboard = await getLeaderboard();
+
+  res.json({
+    success: true,
+    leaderboard,
   });
 });

@@ -5,6 +5,7 @@ import {
 } from "../constants/interview.js";
 import { CustomQuestion } from "../models/CustomQuestion.js";
 import { Interview } from "../models/Interview.js";
+import { User } from "../models/User.js";
 
 const TREND_LIMIT = 8;
 const RECENT_LIMIT = 5;
@@ -192,4 +193,41 @@ export const getAdminStats = async () => {
   ]);
 
   return buildAdminStats({ questionRows, importRows, scored, interviewCount });
+};
+
+export const getLeaderboard = async () => {
+  const rows = await Interview.aggregate([
+    { $match: { status: "completed", totalMarks: { $gt: 0 } } },
+    {
+      $group: {
+        _id: "$user",
+        averageScore: {
+          $avg: {
+            $multiply: [{ $divide: ["$obtainedMarks", "$totalMarks"] }, 100],
+          },
+        },
+        interviews: { $sum: 1 },
+      },
+    },
+    {
+      $lookup: {
+        from: User.collection.name,
+        localField: "_id",
+        foreignField: "_id",
+        as: "user",
+      },
+    },
+    { $unwind: "$user" },
+    { $match: { "user.role": "user" } },
+    { $sort: { averageScore: -1, interviews: -1, "user.fullName": 1 } },
+  ]);
+
+  return rows.map((row, index) => ({
+    rank: index + 1,
+    userId: row._id,
+    name: row.user.fullName,
+    email: row.user.email,
+    averageScore: Math.round(row.averageScore),
+    interviews: row.interviews,
+  }));
 };
