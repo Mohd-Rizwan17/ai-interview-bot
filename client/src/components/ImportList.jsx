@@ -40,7 +40,7 @@ const ImportList = ({ imports }) => {
               {relativeDay(item.importedAt)}
             </p>
           </div>
-          <span className="shrink-0 text-xs font-semibold text-accent">
+          <span className="shrink-0 text-xs font-semibold text-ok">
             Saved
           </span>
         </li>

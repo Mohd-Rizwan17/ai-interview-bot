@@ -49,7 +49,7 @@ const SidePanel = ({
                 </span>
                 <span
                   aria-label={isAnswered ? "Answered" : "Not answered"}
-                  className={isAnswered ? "text-accent" : "text-muted"}
+                  className={isAnswered ? "text-ok" : "text-muted"}
                 >
                   {isAnswered ? "✓" : "·"}
                 </span>

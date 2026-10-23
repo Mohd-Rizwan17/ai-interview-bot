@@ -5,7 +5,7 @@ import { deleteInterview } from "../store/historySlice.js";
 import ConfirmModal from "./ConfirmModal.jsx";
 
 const STATUS = {
-  completed: { label: "Completed", tone: "text-accent" },
+  completed: { label: "Completed", tone: "text-ok" },
   in_progress: { label: "In progress", tone: "text-warn" },
   incomplete: { label: "Incomplete", tone: "text-muted" },
   ended_cheating: { label: "Ended: cheating flag", tone: "text-danger" },

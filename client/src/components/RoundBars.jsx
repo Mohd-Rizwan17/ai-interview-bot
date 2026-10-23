@@ -1,5 +1,5 @@
 const barTone = (percent) => {
-  if (percent >= 70) return "bg-accent";
+  if (percent >= 70) return "bg-ok";
   if (percent >= 40) return "bg-warn";
 
   return "bg-danger";

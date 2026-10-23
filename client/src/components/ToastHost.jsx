@@ -6,7 +6,7 @@ import { dismissToast } from "../store/toastSlice.js";
 const HIDE_MS = 4000;
 
 const TONES = {
-  success: "border-accent text-accent",
+  success: "border-ok text-ok",
   error: "border-danger text-danger",
 };
 

@@ -33,7 +33,7 @@ const defineTheme = (monaco) => {
     base: "vs-dark",
     inherit: true,
     rules: [],
-    colors: { "editor.background": "#0d1117" },
+    colors: { "editor.background": "#0c0a1d" },
   });
 };
 

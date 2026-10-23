@@ -13,7 +13,7 @@ const verdictFor = (attempt) => {
     return { label: "Time up", tone: "text-warn" };
   }
   if (attempt.isCorrect === true) {
-    return { label: "Correct", tone: "text-accent" };
+    return { label: "Correct", tone: "text-ok" };
   }
   if (attempt.isCorrect === false) {
     return { label: "Wrong", tone: "text-danger" };
@@ -22,7 +22,7 @@ const verdictFor = (attempt) => {
 };
 
 const optionTone = (isCorrect, isChosen) => {
-  if (isCorrect) return "border-accent";
+  if (isCorrect) return "border-ok";
   if (isChosen) return "border-danger";
   return "border-line";
 };
@@ -71,13 +71,11 @@ const ReviewQuestion = ({ attempt }) => {
                 <span className="flex-1">{option}</span>
                 <span className="flex flex-col items-end text-xs font-semibold">
                   {isChosen && (
-                    <span className={isCorrect ? "text-accent" : "text-danger"}>
+                    <span className={isCorrect ? "text-ok" : "text-danger"}>
                       Your answer
                     </span>
                   )}
-                  {isCorrect && (
-                    <span className="text-accent">Correct answer</span>
-                  )}
+                  {isCorrect && <span className="text-ok">Correct answer</span>}
                 </span>
               </li>
             );
@@ -97,7 +95,7 @@ const ReviewQuestion = ({ attempt }) => {
             <p className="text-xs uppercase tracking-wide text-muted">
               Model answer
             </p>
-            <p className="mt-1 whitespace-pre-wrap rounded-md border border-accent bg-ground p-3 font-mono text-sm">
+            <p className="mt-1 whitespace-pre-wrap rounded-md border border-ok bg-ground p-3 font-mono text-sm">
               {attempt.idealAnswer}
             </p>
           </div>

@@ -49,15 +49,13 @@ const CustomQuestionRow = ({ question }) => {
               <li
                 key={index}
                 className={`flex items-start gap-3 rounded-md border p-2 text-sm ${
-                  isCorrect ? "border-accent" : "border-line"
+                  isCorrect ? "border-ok" : "border-line"
                 }`}
               >
                 <span className="font-mono text-muted">{LETTERS[index]}</span>
                 <span className="flex-1">{option}</span>
                 {isCorrect && (
-                  <span className="text-xs font-semibold text-accent">
-                    Correct
-                  </span>
+                  <span className="text-xs font-semibold text-ok">Correct</span>
                 )}
               </li>
             );

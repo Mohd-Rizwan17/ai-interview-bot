@@ -253,7 +253,7 @@ const ImportReview = ({
     <div className="mt-4">
       <p className="text-sm">
         Found <span className="font-mono">{initialDrafts.length}</span>{" "}
-        questions · <span className="font-mono text-accent">{readyCount}</span>{" "}
+        questions · <span className="font-mono text-ok">{readyCount}</span>{" "}
         ready ·{" "}
         <span className="font-mono text-danger">
           {drafts.length - readyCount}
@@ -334,7 +334,7 @@ const ImportReview = ({
                         key={index}
                         className={
                           index === draft.correctOption
-                            ? "text-accent"
+                            ? "text-ok"
                             : "text-muted"
                         }
                       >

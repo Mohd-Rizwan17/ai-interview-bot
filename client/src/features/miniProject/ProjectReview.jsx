@@ -6,7 +6,7 @@ import ProjectAside from "./components/ProjectAside.jsx";
 import { loadProject, resetProject } from "./miniProjectSlice.js";
 
 const STATUS_LABELS = {
-  answered: { label: "Code submitted", tone: "text-accent" },
+  answered: { label: "Code submitted", tone: "text-ok" },
   skipped: { label: "Skipped", tone: "text-warn" },
   timed_out: { label: "Time up", tone: "text-warn" },
 };

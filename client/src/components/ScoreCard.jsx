@@ -5,7 +5,7 @@ const ScoreCard = ({ interview, summary }) => {
   const isCheating = interview.status === "ended_cheating";
 
   const stats = [
-    { label: "Correct", value: summary.right, tone: "text-accent" },
+    { label: "Correct", value: summary.right, tone: "text-ok" },
     { label: "Wrong", value: summary.wrong, tone: "text-danger" },
     { label: "Not answered", value: summary.unanswered, tone: "text-warn" },
     {
