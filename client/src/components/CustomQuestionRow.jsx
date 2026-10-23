@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { deleteCustomQuestion } from "../store/customQuestionSlice.js";
+import ConfirmModal from "./ConfirmModal.jsx";
 
 const LETTERS = ["A", "B", "C", "D"];
 
@@ -12,12 +14,12 @@ const FORMAT_LABELS = {
 const CustomQuestionRow = ({ question }) => {
   const dispatch = useDispatch();
   const busy = useSelector((state) => state.customQuestions.busy);
+  const [isConfirming, setIsConfirming] = useState(false);
   const isMcq = question.format === "mcq";
 
-  const handleDelete = () => {
-    if (window.confirm("Delete this question? This cannot be undone.")) {
-      dispatch(deleteCustomQuestion(question._id));
-    }
+  const handleDelete = async () => {
+    await dispatch(deleteCustomQuestion(question._id));
+    setIsConfirming(false);
   };
 
   return (
@@ -78,13 +80,23 @@ const CustomQuestionRow = ({ question }) => {
       <div className="mt-3 flex justify-end border-t border-line pt-2">
         <button
           type="button"
-          onClick={handleDelete}
+          onClick={() => setIsConfirming(true)}
           disabled={busy}
           className="text-sm text-danger disabled:opacity-50"
         >
           Delete
         </button>
       </div>
+
+      {isConfirming && (
+        <ConfirmModal
+          title="Delete this question?"
+          message="This cannot be undone."
+          busy={busy}
+          onConfirm={handleDelete}
+          onCancel={() => setIsConfirming(false)}
+        />
+      )}
     </article>
   );
 };

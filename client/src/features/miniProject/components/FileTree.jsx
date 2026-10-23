@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useDispatch, useSelector, useStore } from "react-redux";
+import ConfirmModal from "../../../components/ConfirmModal.jsx";
 import { buildTree, isInside, normalizePath, parentPath } from "../fileTree.js";
 import {
   clearTreeError,
@@ -45,6 +46,7 @@ const FileTree = ({ disabled }) => {
   const [draft, setDraft] = useState(null);
   const [selectedFolder, setSelectedFolder] = useState("");
   const [collapsed, setCollapsed] = useState(() => new Set());
+  const [deleting, setDeleting] = useState(null);
   const nodes = buildTree(files, folders);
 
   const startDraft = (mode, from = null) => {
@@ -91,18 +93,25 @@ const FileTree = ({ disabled }) => {
     });
   };
 
-  const handleDelete = (node) => {
-    const count = files.filter((file) => isInside(file.path, node.path)).length;
-    const message =
-      node.type === "folder"
-        ? `Delete folder "${node.path}" and its ${count} file(s)?`
-        : `Delete "${node.path}"?`;
+   const handleDelete = (node) => setDeleting(node);
 
-    if (!window.confirm(message)) return;
+   const confirmDelete = () => {
+     dispatch(deleteEntry(deleting.path));
+     setSelectedFolder("");
+     setDeleting(null);
+   };
 
-    dispatch(deleteEntry(node.path));
-    setSelectedFolder("");
-  };
+   const deleteMessage = (node) => {
+     if (node.type !== "folder") {
+       return "This file will be removed from your project.";
+     }
+
+     const count = files.filter((file) =>
+       isInside(file.path, node.path),
+     ).length;
+
+     return `This folder and its ${count} file${count === 1 ? "" : "s"} will be removed.`;
+   };
 
   const renderNodes = (list, depth) =>
     list.map((node) => {
@@ -233,6 +242,14 @@ const FileTree = ({ disabled }) => {
         <p className="px-3 py-2 text-sm text-muted">No files yet.</p>
       ) : (
         <ul className="flex-1 overflow-y-auto pb-2">{renderNodes(nodes, 0)}</ul>
+      )}
+      {deleting && (
+        <ConfirmModal
+          title={`Delete "${deleting.path}"?`}
+          message={deleteMessage(deleting)}
+          onConfirm={confirmDelete}
+          onCancel={() => setDeleting(null)}
+        />
       )}
     </aside>
   );

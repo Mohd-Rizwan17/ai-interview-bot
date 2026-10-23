@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router";
 import { deleteInterview } from "../store/historySlice.js";
+import ConfirmModal from "./ConfirmModal.jsx";
 
 const STATUS = {
   completed: { label: "Completed", tone: "text-accent" },
@@ -25,6 +27,7 @@ const targetFor = (interview) => {
 const HistoryRow = ({ interview }) => {
   const dispatch = useDispatch();
   const busy = useSelector((state) => state.history.busy);
+  const [isConfirming, setIsConfirming] = useState(false);
   const status = STATUS[interview.status];
   const target = targetFor(interview);
   const canDelete = interview.status !== "in_progress";
@@ -34,10 +37,9 @@ const HistoryRow = ({ interview }) => {
     interview.status === "in_progress" || interview.status === "incomplete";
   const roundCount = interview.rounds.length;
 
-  const handleDelete = () => {
-    if (window.confirm(`Delete "${interview.title}"? This cannot be undone.`)) {
-      dispatch(deleteInterview(interview._id));
-    }
+  const handleDelete = async () => {
+    await dispatch(deleteInterview(interview._id));
+    setIsConfirming(false);
   };
 
   const content = (
@@ -103,13 +105,23 @@ const HistoryRow = ({ interview }) => {
         <div className="flex justify-end border-t border-line px-4 py-2">
           <button
             type="button"
-            onClick={handleDelete}
+            onClick={() => setIsConfirming(true)}
             disabled={busy}
             className="text-sm text-danger disabled:opacity-50"
           >
             Delete
           </button>
         </div>
+      )}
+
+      {isConfirming && (
+        <ConfirmModal
+          title={`Delete "${interview.title}"?`}
+          message="This cannot be undone."
+          busy={busy}
+          onConfirm={handleDelete}
+          onCancel={() => setIsConfirming(false)}
+        />
       )}
     </div>
   );

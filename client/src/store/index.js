@@ -9,6 +9,7 @@ import reviewReducer from "./reviewSlice.js";
 import selectionReducer from "./selectionSlice.js";
 import statsReducer from "./statsSlice.js";
 import adminStatsReducer from "./adminStatsSlice.js";
+import toastReducer from "./toastSlice.js";
 
 const appReducer = combineReducers({
   auth: authReducer,
@@ -20,6 +21,7 @@ const appReducer = combineReducers({
   selection: selectionReducer,
   stats: statsReducer,
   adminStats: adminStatsReducer,
+  toasts: toastReducer,
 });
 
 const isLoggedOut = isAnyOf(

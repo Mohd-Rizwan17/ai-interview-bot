@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router";
+import ConfirmModal from "../components/ConfirmModal.jsx";
 import HistoryRow from "../components/HistoryRow.jsx";
 import Notice from "../components/Notice.jsx";
 import {
@@ -17,6 +18,7 @@ const RETENTION_OPTIONS = [3, 5, 7, 10, 20, 30];
 const History = () => {
   const dispatch = useDispatch();
   const [query, setQuery] = useState("");
+  const [confirm, setConfirm] = useState(null);
   const {
     items,
     page,
@@ -70,33 +72,46 @@ const History = () => {
     dispatch(fetchHistory({ page: nextPage, limit: PAGE_SIZE, search }));
   };
 
-  const handleClear = () => {
-    const message = "Delete all finished interviews? This cannot be undone.";
-
-    if (window.confirm(message)) dispatch(clearHistory());
-  };
-
   const handleRetention = (event) => {
     const days = Number(event.target.value);
-    const message = `Interviews older than ${days} days will be deleted right now. Continue?`;
 
-    if (days < retentionDays && !window.confirm(message)) return;
+    if (days < retentionDays) {
+      setConfirm({ type: "retention", days });
+      return;
+    }
 
     dispatch(updateRetention(days));
   };
 
+  const handleConfirm = async () => {
+    if (confirm.type === "clear") await dispatch(clearHistory());
+    else await dispatch(updateRetention(confirm.days));
+
+    setConfirm(null);
+  };
+
+  const modalFor = (action) =>
+    action.type === "clear"
+      ? {
+          title: "Delete all interviews?",
+          message:
+            "All finished interviews will be deleted. This cannot be undone.",
+          confirmLabel: "Delete all",
+        }
+      : {
+          title: "Delete older interviews?",
+          message: `Interviews older than ${action.days} days will be deleted right now.`,
+          confirmLabel: "Delete",
+        };
+
   return (
     <main className="mx-auto min-h-screen max-w-3xl px-4 py-8">
-      {/* <Link to="/" className="text-sm text-muted">
-        ← Dashboard
-      </Link> */}
-
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold">History</h1>
         {!isSearching && total > 0 && (
           <button
             type="button"
-            onClick={handleClear}
+            onClick={() => setConfirm({ type: "clear" })}
             disabled={busy}
             className="rounded-md border border-danger px-3 py-1.5 text-sm text-danger disabled:opacity-50"
           >
@@ -194,6 +209,15 @@ const History = () => {
             Next
           </button>
         </nav>
+      )}
+
+      {confirm && (
+        <ConfirmModal
+          {...modalFor(confirm)}
+          busy={busy}
+          onConfirm={handleConfirm}
+          onCancel={() => setConfirm(null)}
+        />
       )}
     </main>
   );
