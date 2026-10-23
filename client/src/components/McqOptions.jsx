@@ -6,7 +6,7 @@ const McqOptions = ({ options, selected, onSelect }) => (
     {options.map((option, index) => (
       <label
         key={index}
-        className="flex cursor-pointer items-start gap-3 rounded-lg border border-line bg-panel p-4 has-[:checked]:border-accent has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent"
+        className="glass-solid flex cursor-pointer items-start gap-3 rounded-lg p-4 hover:border-(--glass-border-hover) has-[:checked]:border-accent has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent"
       >
         <input
           type="radio"

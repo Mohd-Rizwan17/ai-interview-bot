@@ -16,7 +16,7 @@ const ScoreCard = ({ interview, summary }) => {
   ];
 
   return (
-    <section className="rounded-xl border border-line bg-panel p-6">
+    <section className="glass rounded-xl p-6">
       <p className={`text-sm ${isCheating ? "text-danger" : "text-muted"}`}>
         {isCheating ? "Ended: cheating flag" : "Completed"}
       </p>

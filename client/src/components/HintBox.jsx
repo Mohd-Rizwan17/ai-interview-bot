@@ -17,7 +17,7 @@ const HintBox = ({ question, disabled, onReveal }) => {
   return (
     <div className="px-6 pb-6">
       {question.hintUsed ? (
-        <div className="rounded-md border border-line bg-panel p-4">
+        <div className="glass-solid rounded-md p-4">
           <p className="text-xs uppercase tracking-wide text-warn">
             Hint (1 mark deducted)
           </p>

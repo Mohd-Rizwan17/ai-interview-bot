@@ -16,7 +16,7 @@ const SidePanel = ({
     : 0;
 
   return (
-    <aside className="flex flex-col border-b border-line bg-panel p-4 lg:w-64 lg:shrink-0 lg:overflow-y-auto lg:border-b-0 lg:border-r">
+    <aside className="flex flex-col border-b border-line bg-(--panel-solid) p-4 lg:w-64 lg:shrink-0 lg:overflow-y-auto lg:border-b-0 lg:border-r">
       <p className="text-xs uppercase tracking-wide text-muted">
         Round {round.order} of {round.totalRounds}
       </p>
@@ -35,10 +35,10 @@ const SidePanel = ({
                 type="button"
                 onClick={() => onSelect(question.id)}
                 aria-current={isActive ? "true" : undefined}
-                className={`flex w-full items-center gap-3 rounded-md border px-3 py-2 text-left ${
+                className={`flex w-full items-center gap-3 rounded-lg border px-3 py-2 text-left ${
                   isActive
-                    ? "border-accent bg-ground"
-                    : "border-transparent hover:bg-ground"
+                    ? "border-accent/30 bg-accent/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]"
+                    : "border-transparent hover:bg-white/5"
                 }`}
               >
                 <span className="font-mono text-xs text-muted">

@@ -45,7 +45,7 @@ const PdfImport = ({ onClose }) => {
   };
 
   return (
-    <section className="mt-6 rounded-xl border border-line bg-panel p-5">
+    <section className="glass mt-6 rounded-xl p-5">
       <h2 className="text-lg font-semibold">Import from PDF</h2>
       <p className="mt-1 text-sm text-muted">
         The PDF is read in your browser. It is not uploaded anywhere.

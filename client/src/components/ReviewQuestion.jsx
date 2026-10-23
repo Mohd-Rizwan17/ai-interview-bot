@@ -34,7 +34,7 @@ const ReviewQuestion = ({ attempt }) => {
   const isMcq = attempt.format === "mcq";
 
   return (
-    <article className="rounded-xl border border-line bg-panel p-5">
+    <article className="glass-solid rounded-xl p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm text-muted">
           <span className="font-mono">Q{attempt.order}</span> · {attempt.topic}

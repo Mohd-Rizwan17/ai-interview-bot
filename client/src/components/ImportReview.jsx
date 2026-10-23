@@ -8,7 +8,7 @@ const MAX_QUESTIONS = 200;
 const LETTERS = ["A", "B", "C", "D"];
 
 const inputClass =
-  "w-full rounded-md border border-line bg-panel px-3 py-2 text-sm text-ink placeholder:text-muted";
+  "w-full rounded-md border border-line bg-ground/40 px-3 py-2 text-sm text-ink placeholder:text-muted";
 
 const normalize = (text) => text.trim().toLowerCase().replace(/\s+/g, " ");
 
