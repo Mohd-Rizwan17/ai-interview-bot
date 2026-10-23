@@ -5,10 +5,10 @@ const NavItem = ({ to, end, children }) => (
     to={to}
     end={end}
     className={({ isActive }) =>
-      `relative block rounded-md border border-transparent px-3 py-2 text-sm ${
+      `block rounded-lg border px-3 py-2 text-sm ${
         isActive
-          ? "bg-line/50 text-ink before:absolute before:inset-y-1.5 before:left-0 before:w-0.5 before:rounded-full before:bg-accent"
-          : "hover:bg-ground"
+          ? "border-accent/30 bg-accent/15 text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]"
+          : "border-transparent hover:bg-white/5"
       }`
     }
   >

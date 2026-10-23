@@ -11,8 +11,8 @@ const AppShell = () => {
   const firstName = user.fullName.split(" ")[0];
 
   return (
-    <div className="flex min-h-screen flex-col lg:h-screen lg:flex-row">
-      <aside className="flex flex-col border-b border-line bg-panel lg:w-64 lg:shrink-0 lg:overflow-y-auto lg:border-b-0 lg:border-r">
+    <div className="flex min-h-screen flex-col gap-4 p-3 lg:h-screen lg:flex-row lg:p-4">
+      <aside className="glass-strong flex flex-col rounded-xl lg:w-64 lg:shrink-0 lg:overflow-y-auto">
         <div className="flex items-center gap-2 px-4 py-4">
           <span
             aria-hidden="true"
@@ -41,7 +41,7 @@ const AppShell = () => {
           <button
             type="button"
             onClick={() => dispatch(logoutUser())}
-            className="shrink-0 rounded-md border border-line px-3 py-1 text-sm"
+            className="shrink-0 rounded-md border border-line px-3 py-1 text-sm hover:bg-white/5"
           >
             Logout
           </button>
