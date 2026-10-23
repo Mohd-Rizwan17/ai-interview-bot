@@ -1,7 +1,7 @@
 import Avatar from "./Avatar.jsx";
 
 const LeaderboardTable = ({ entries }) => (
-  <div className="overflow-hidden rounded-xl border border-line bg-panel">
+  <div className="glass overflow-hidden rounded-xl">
     <div className="grid grid-cols-[3rem_1fr_4rem_5rem] gap-3 border-b border-line px-4 py-2 text-xs uppercase tracking-wide text-muted">
       <span>Rank</span>
       <span>User</span>

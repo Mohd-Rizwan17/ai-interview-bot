@@ -7,7 +7,7 @@ const PodiumSpot = ({ entry }) => {
 
   return (
     <li
-      className={`flex min-w-0 flex-col items-center justify-end gap-2 rounded-xl border border-line bg-panel p-3 text-center ${HEIGHTS[entry.rank]} ${
+      className={`glass flex min-w-0 flex-col items-center justify-end gap-2 rounded-xl p-3 text-center ${HEIGHTS[entry.rank]} ${
         isFirst ? "border-accent" : ""
       }`}
     >

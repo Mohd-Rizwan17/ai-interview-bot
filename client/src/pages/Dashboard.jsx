@@ -19,7 +19,7 @@ const ROUND_TITLES = Object.fromEntries(
   ROUNDS.map((round) => [round.key, round.title]),
 );
 
-const sectionClass = "rounded-xl border border-line bg-panel p-6";
+const sectionClass = "glass rounded-xl p-6";
 
 const roundValue = (round) => (round ? round.title : "—");
 
@@ -75,7 +75,7 @@ const Dashboard = () => {
       </header>
 
       {active && (
-        <section className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-accent bg-panel p-4">
+        <section className="glass mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border-accent p-4">
           <div>
             <p className="text-xs uppercase tracking-wide text-accent">
               Interview in progress
@@ -142,7 +142,7 @@ const Dashboard = () => {
         )}
 
         <section
-          className={`rounded-xl border border-accent bg-panel p-6 ${data ? "" : "lg:col-span-2"}`}
+          className={`glass rounded-xl border-accent p-6 ${data ? "" : "lg:col-span-2"}`}
         >
           <h2 className="text-lg font-semibold">Start interview</h2>
           <p className="mt-1 text-sm text-muted">

@@ -9,7 +9,7 @@ import StatCard from "../components/StatCard.jsx";
 import { DIFFICULTIES } from "../constants/rounds.js";
 import { fetchAdminStats } from "../store/adminStatsSlice.js";
 
-const sectionClass = "rounded-xl border border-line bg-panel p-6";
+const sectionClass = "glass rounded-xl p-6";
 
 const AdminOverview = () => {
   const dispatch = useDispatch();
