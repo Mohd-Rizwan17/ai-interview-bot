@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import AppShell from "../layouts/AppShell.jsx";
+import AuthLayout from "../layouts/AuthLayout.jsx";
 import MainLayout from "../layouts/MainLayout.jsx";
 import History from "../pages/History.jsx";
 import Home from "../pages/Home.jsx";
@@ -40,8 +41,13 @@ const router = createBrowserRouter([
           { path: "interview/:id/review", element: <Review /> },
         ],
       },
-      { path: "login", element: <Login /> },
-      { path: "register", element: <Register /> },
+      {
+        element: <AuthLayout />,
+        children: [
+          { path: "login", element: <Login /> },
+          { path: "register", element: <Register /> },
+        ],
+      },
       { path: "*", element: <NotFound /> },
     ],
   },
