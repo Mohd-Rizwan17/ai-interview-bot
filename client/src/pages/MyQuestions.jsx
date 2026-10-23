@@ -65,14 +65,14 @@ const MyQuestions = () => {
 
   if (!loaded) {
     return (
-      <main className="flex min-h-screen items-center justify-center">
+      <main className="flex min-h-[60vh] items-center justify-center">
         <p className="text-muted">Loading questions...</p>
       </main>
     );
   }
 
   return (
-    <main className="mx-auto min-h-screen max-w-3xl px-4 py-8">
+    <main className="mx-auto max-w-3xl px-4 py-8">
       {/* <Link to="/" className="text-sm text-muted">
         ← Dashboard
       </Link> */}

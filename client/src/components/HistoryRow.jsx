@@ -90,9 +90,7 @@ const HistoryRow = ({ interview }) => {
   );
 
   return (
-    <div
-      className={`rounded-xl border border-line bg-panel ${target ? "hover:border-muted" : ""}`}
-    >
+    <div className={`glass rounded-xl ${target ? "glass-interactive" : ""}`}>
       {target ? (
         <Link to={target} className="block p-4">
           {content}

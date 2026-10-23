@@ -23,7 +23,7 @@ const CustomQuestionRow = ({ question }) => {
   };
 
   return (
-    <article className="rounded-xl border border-line bg-panel p-4">
+    <article className="glass-solid rounded-xl p-4">
       <div className="flex flex-wrap items-center gap-2 text-xs">
         <span className="rounded-full border border-line px-2 py-1 text-muted">
           {FORMAT_LABELS[question.format]}
