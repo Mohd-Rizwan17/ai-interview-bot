@@ -9,7 +9,7 @@ import {
 } from "../store/authSlice.js";
 
 const inputClass =
-  "w-full rounded-md border border-line bg-ground px-3 py-2 text-ink placeholder:text-muted";
+  "w-full rounded-md border border-line bg-ground/40 px-3 py-2 text-ink placeholder:text-muted";
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -37,7 +37,7 @@ const Login = () => {
   if (conflict) {
     return (
       <main className="flex min-h-screen items-center justify-center p-4">
-        <section className="w-full max-w-md rounded-xl border border-line bg-panel p-6">
+        <section className="glass-strong w-full max-w-md rounded-xl p-6">
           <h1 className="text-xl font-semibold">
             Already logged in on another device
           </h1>
@@ -62,7 +62,7 @@ const Login = () => {
               type="button"
               disabled={isLoading}
               onClick={() => dispatch(cancelConflict())}
-              className="rounded-md border border-line px-4 py-2 text-ink"
+              className="rounded-md border border-line px-4 py-2 text-ink hover:bg-white/5"
             >
               Cancel
             </button>
@@ -76,7 +76,7 @@ const Login = () => {
     <main className="flex min-h-screen items-center justify-center p-4">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md rounded-xl border border-line bg-panel p-6"
+        className="glass-strong w-full max-w-md rounded-xl p-6"
       >
         <h1 className="text-2xl font-semibold">Welcome back</h1>
         <p className="mt-1 text-sm text-muted">Login to continue practising.</p>

@@ -4,7 +4,7 @@ import { Link, Navigate } from "react-router";
 import { clearAuthError, registerUser } from "../store/authSlice.js";
 
 const inputClass =
-  "w-full rounded-md border border-line bg-ground px-3 py-2 text-ink placeholder:text-muted";
+  "w-full rounded-md border border-line bg-ground/40 px-3 py-2 text-ink placeholder:text-muted";
 
 const fields = [
   { name: "fullName", label: "Full name", type: "text", autoComplete: "name" },
@@ -62,7 +62,7 @@ const Register = () => {
     <main className="flex min-h-screen items-center justify-center p-4">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md rounded-xl border border-line bg-panel p-6"
+        className="glass-strong w-full max-w-md rounded-xl p-6"
       >
         <h1 className="text-2xl font-semibold">Create your account</h1>
         <p className="mt-1 text-sm text-muted">
