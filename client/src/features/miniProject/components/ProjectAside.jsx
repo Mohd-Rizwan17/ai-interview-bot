@@ -11,7 +11,7 @@ const ProjectAside = ({ project, footer }) => {
   const [tab, setTab] = useState("task");
 
   return (
-    <aside className="flex w-full shrink-0 flex-col border-t border-line bg-panel lg:w-96 lg:border-l lg:border-t-0">
+    <aside className="flex w-full shrink-0 flex-col border-t border-line bg-(--panel-solid) lg:w-96 lg:border-l lg:border-t-0">
       <div role="tablist" className="flex border-b border-line">
         {TABS.map(({ key, label }) => (
           <button

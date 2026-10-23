@@ -67,7 +67,7 @@ const MiniProjectRoom = ({ attemptId, isTimeUp, submit }) => {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col lg:overflow-hidden">
-      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-2">
+      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-(--panel-solid) px-4 py-2">
         <h1 className="font-semibold">{project.title}</h1>
         <p className={`flex items-center gap-2 text-sm ${saveLabel.tone}`}>
           {saveLabel.text}

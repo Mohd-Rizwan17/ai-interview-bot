@@ -124,7 +124,7 @@ const FileTree = ({ disabled }) => {
         <li key={node.path}>
           <div
             className={`group flex items-center pr-2 text-sm ${
-              node.path === activePath ? "bg-line" : "hover:bg-line/50"
+              node.path === activePath ? "bg-accent/15" : "hover:bg-white/5"
             }`}
             style={{ paddingLeft: depth * 12 + 8 }}
           >
@@ -174,7 +174,7 @@ const FileTree = ({ disabled }) => {
     });
 
   return (
-    <aside className="flex max-h-60 w-full shrink-0 flex-col border-b border-line bg-panel lg:max-h-none lg:w-56 lg:border-b-0 lg:border-r">
+    <aside className="flex max-h-60 w-full shrink-0 flex-col border-b border-line bg-(--panel-solid) lg:max-h-none lg:w-56 lg:border-b-0 lg:border-r">
       <div className="flex items-center justify-between px-3 py-2">
         <h2 className="text-xs font-semibold uppercase tracking-wide text-muted">
           Explorer

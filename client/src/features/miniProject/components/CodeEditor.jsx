@@ -49,7 +49,7 @@ const CodeEditor = ({ readOnly }) => {
     <section className="flex min-w-0 flex-1 flex-col">
       <div
         role="tablist"
-        className="flex overflow-x-auto border-b border-line bg-panel"
+        className="flex overflow-x-auto border-b border-line bg-(--panel-solid)"
       >
         {openTabs.map((path) => (
           <div
