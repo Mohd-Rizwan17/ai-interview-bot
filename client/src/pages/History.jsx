@@ -4,6 +4,8 @@ import { Link } from "react-router";
 import ConfirmModal from "../components/ConfirmModal.jsx";
 import HistoryRow from "../components/HistoryRow.jsx";
 import Notice from "../components/Notice.jsx";
+import PageLoader from "../components/PageLoader.jsx";
+
 import {
   clearActionError,
   clearHistory,

@@ -3,6 +3,8 @@ import { useDispatch, useSelector } from "react-redux";
 import LeaderboardPodium from "../components/LeaderboardPodium.jsx";
 import LeaderboardTable from "../components/LeaderboardTable.jsx";
 import { fetchLeaderboard } from "../store/adminStatsSlice.js";
+import PageLoader from "../components/PageLoader.jsx";
+
 
 const PODIUM_SIZE = 3;
 

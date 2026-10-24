@@ -16,6 +16,8 @@ import { setDifficulty, setProjectStack } from "../store/selectionSlice.js";
 import { fetchStats } from "../store/statsSlice.js";
 import RoundRadar from "../components/RoundRadar.jsx";
 import RoundTreemap from "../components/RoundTreemap.jsx";
+import PageLoader from "../components/PageLoader.jsx";
+
 
 const ROUND_TITLES = Object.fromEntries(
   ROUNDS.map((round) => [round.key, round.title]),

@@ -6,6 +6,7 @@ import Notice from "../components/Notice.jsx";
 import PdfImport from "../components/PdfImport.jsx";
 import { useSearchParams } from "react-router";
 import { DIFFICULTIES } from "../constants/rounds.js";
+import PageLoader from "../components/PageLoader.jsx";
 import {
   clearActionError,
   fetchCustomQuestions,

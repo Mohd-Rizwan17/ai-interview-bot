@@ -7,6 +7,8 @@ import {
   clearActionError,
   fetchCustomQuestions,
 } from "../store/customQuestionSlice.js";
+import PageLoader from "../components/PageLoader.jsx";
+
 
 const ImportPdf = () => {
   const dispatch = useDispatch();

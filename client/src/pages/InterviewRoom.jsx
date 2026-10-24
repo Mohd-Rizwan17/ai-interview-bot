@@ -13,6 +13,8 @@ import { flushProject } from "../features/miniProject/miniProjectSlice.js";
 import useAntiCheat, { CHEAT_AWAY_MS } from "../hooks/useAntiCheat.js";
 import useSpeech, { buildSpeechText } from "../hooks/useSpeech.js";
 import useTimer from "../hooks/useTimer.js";
+import PageLoader from "../components/PageLoader.jsx";
+
 import {
   fetchHint,
   fetchRound,
