@@ -108,6 +108,7 @@ const Dashboard = () => {
 
       {data && (
         <section
+          data-tour="stats"
           aria-label="Your stats"
           className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
         >
@@ -145,6 +146,7 @@ const Dashboard = () => {
         )}
 
         <section
+          data-tour="start"
           className={`glass rounded-xl border-accent p-6 ${data ? "lg:col-span-5" : "lg:col-span-12"}`}
         >
           <h2 className="text-lg font-semibold">Start interview</h2>
