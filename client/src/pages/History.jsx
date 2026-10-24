@@ -57,11 +57,7 @@ const History = () => {
   }
 
   if (!loaded) {
-    return (
-      <main className="flex min-h-[60vh] items-center justify-center">
-        <p className="text-muted">Loading history...</p>
-      </main>
-    );
+    return <PageLoader label="Loading history" />;
   }
 
   const totalPages = Math.max(1, Math.ceil(total / limit));

@@ -27,7 +27,9 @@ const Leaderboard = () => {
         </p>
       </div>
 
-      {isLoading && <p className="text-sm text-muted">Loading...</p>}
+      {isLoading && (
+        <PageLoader label="Loading leaderboard" className="min-h-64" />
+      )}
       {error && <p className="text-sm text-danger">{error}</p>}
 
       {!isLoading && !error && items.length === 0 && (

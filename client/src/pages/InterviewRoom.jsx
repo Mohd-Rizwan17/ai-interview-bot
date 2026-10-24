@@ -205,13 +205,9 @@ const InterviewRoom = () => {
     );
   }
 
-  if (!round || !activeQuestion) {
-    return (
-      <main className="flex min-h-screen items-center justify-center">
-        <p className="text-muted">Loading interview...</p>
-      </main>
-    );
-  }
+ if (!round || !activeQuestion) {
+   return <PageLoader label="Loading interview" className="min-h-screen" />;
+ }
 
   const notices = (
     <>

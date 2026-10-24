@@ -9,6 +9,7 @@ import RoundBars from "../components/RoundBars.jsx";
 import StatCard from "../components/StatCard.jsx";
 import { DIFFICULTIES } from "../constants/rounds.js";
 import { fetchAdminStats, fetchLeaderboard } from "../store/adminStatsSlice.js";
+import PageLoader from "../components/PageLoader.jsx";
 
 const sectionClass = "glass rounded-xl p-6";
 
@@ -23,14 +24,15 @@ const AdminOverview = () => {
 
   const renderBody = () => {
     if (!data) {
-      return (
-        <p
-          role={error ? "alert" : "status"}
-          className={`mt-6 text-sm ${error ? "text-danger" : "text-muted"}`}
-        >
-          {error ? `Cannot load stats: ${error}` : "Loading stats..."}
-        </p>
-      );
+      if (error) {
+        return (
+          <p role="alert" className="mt-6 text-sm text-danger">
+            Cannot load stats: {error}
+          </p>
+        );
+      }
+
+      return <PageLoader label="Loading overview" className="min-h-64" />;
     }
 
     const { questions } = data;

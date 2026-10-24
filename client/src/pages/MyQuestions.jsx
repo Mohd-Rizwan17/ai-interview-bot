@@ -64,11 +64,7 @@ const MyQuestions = () => {
   }
 
   if (!loaded) {
-    return (
-      <main className="flex min-h-[60vh] items-center justify-center">
-        <p className="text-muted">Loading questions...</p>
-      </main>
-    );
+    return <PageLoader label="Loading questions" />;
   }
 
   return (

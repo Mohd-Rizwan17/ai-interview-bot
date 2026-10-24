@@ -94,15 +94,14 @@ const Dashboard = () => {
         </section>
       )}
 
-      {!data && (
-        <p
-          role={stats.error ? "alert" : "status"}
-          className={`mt-6 text-sm ${stats.error ? "text-danger" : "text-muted"}`}
-        >
-          {stats.error
-            ? `Cannot load stats: ${stats.error}`
-            : "Loading stats..."}
+      {!data && stats.error && (
+        <p role="alert" className="mt-6 text-sm text-danger">
+          Cannot load stats: {stats.error}
         </p>
+      )}
+
+      {!data && !stats.error && (
+        <PageLoader label="Preparing your dashboard" className="min-h-64" />
       )}
 
       {data && (

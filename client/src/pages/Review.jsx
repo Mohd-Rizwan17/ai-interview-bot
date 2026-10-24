@@ -31,11 +31,7 @@ const Review = () => {
   }
 
   if (!interview) {
-    return (
-      <main className="flex min-h-screen items-center justify-center">
-        <p className="text-muted">Loading review...</p>
-      </main>
-    );
+    return <PageLoader label="Loading review" className="min-h-screen" />;
   }
 
   if (interview.status === "in_progress") {

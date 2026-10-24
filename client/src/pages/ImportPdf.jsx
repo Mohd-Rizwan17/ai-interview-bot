@@ -29,13 +29,9 @@ const ImportPdf = () => {
     );
   }
 
-  if (!loaded) {
-    return (
-      <main className="flex min-h-screen items-center justify-center">
-        <p className="text-muted">Loading...</p>
-      </main>
-    );
-  }
+ if (!loaded) {
+   return <PageLoader label="Loading" />;
+ }
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">
