@@ -3,6 +3,7 @@ import { Outlet } from "react-router";
 import AdminNav from "../components/AdminNav.jsx";
 import UserNav from "../components/UserNav.jsx";
 import { logoutUser } from "../store/authSlice.js";
+import Avatar from "../components/Avatar.jsx";
 
 const AppShell = () => {
   const dispatch = useDispatch();
@@ -30,12 +31,7 @@ const AppShell = () => {
 
         <div className="mt-auto flex items-center justify-between gap-2 border-t border-line p-4">
           <div className="flex min-w-0 items-center gap-3">
-            <span
-              aria-hidden="true"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-line text-sm font-semibold"
-            >
-              {firstName[0].toUpperCase()}
-            </span>
+            <Avatar name={firstName} online />
             <p className="truncate text-sm">{firstName}</p>
           </div>
           <button

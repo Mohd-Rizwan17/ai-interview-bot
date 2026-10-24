@@ -2,21 +2,23 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router";
 import ImportList from "../components/ImportList.jsx";
+import LeaderboardPreview from "../components/LeaderboardPreview.jsx";
 import NeedsMoreList from "../components/NeedsMoreList.jsx";
 import QuestionBars from "../components/QuestionBars.jsx";
 import RoundBars from "../components/RoundBars.jsx";
 import StatCard from "../components/StatCard.jsx";
 import { DIFFICULTIES } from "../constants/rounds.js";
-import { fetchAdminStats } from "../store/adminStatsSlice.js";
+import { fetchAdminStats, fetchLeaderboard } from "../store/adminStatsSlice.js";
 
 const sectionClass = "glass rounded-xl p-6";
 
 const AdminOverview = () => {
   const dispatch = useDispatch();
-  const { data, error } = useSelector((state) => state.adminStats);
+  const { data, error, leaderboard } = useSelector((state) => state.adminStats);
 
   useEffect(() => {
     dispatch(fetchAdminStats());
+    dispatch(fetchLeaderboard());
   }, [dispatch]);
 
   const renderBody = () => {
@@ -62,11 +64,27 @@ const AdminOverview = () => {
           </section>
 
           <section className={sectionClass}>
+            <h2 className="text-lg font-semibold">Top performers</h2>
+            {leaderboard.error ? (
+              <p role="alert" className="mt-4 text-sm text-danger">
+                {leaderboard.error}
+              </p>
+            ) : (
+              <LeaderboardPreview items={leaderboard.items} />
+            )}
+          </section>
+
+          <section className={sectionClass}>
             <h2 className="text-lg font-semibold">Recent imports</h2>
             <ImportList imports={data.recentImports} />
           </section>
 
           <section className={sectionClass}>
+            <h2 className="text-lg font-semibold">Needs more questions</h2>
+            <NeedsMoreList items={data.needsMore} />
+          </section>
+
+          <section className={`${sectionClass} lg:col-span-2`}>
             <h2 className="text-lg font-semibold">
               All users: performance by round
             </h2>
@@ -75,11 +93,6 @@ const AdminOverview = () => {
               {data.totals.interviews === 1 ? "" : "s"} taken
             </p>
             <RoundBars rounds={data.usersByRound} />
-          </section>
-
-          <section className={sectionClass}>
-            <h2 className="text-lg font-semibold">Needs more questions</h2>
-            <NeedsMoreList items={data.needsMore} />
           </section>
         </div>
       </>
