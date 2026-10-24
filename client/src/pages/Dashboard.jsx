@@ -14,6 +14,8 @@ import {
 } from "../store/interviewSlice.js";
 import { setDifficulty, setProjectStack } from "../store/selectionSlice.js";
 import { fetchStats } from "../store/statsSlice.js";
+import RoundRadar from "../components/RoundRadar.jsx";
+import RoundTreemap from "../components/RoundTreemap.jsx";
 
 const ROUND_TITLES = Object.fromEntries(
   ROUNDS.map((round) => [round.key, round.title]),
@@ -133,16 +135,16 @@ const Dashboard = () => {
         </section>
       )}
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+      <div className="mt-6 grid gap-6 lg:grid-cols-12">
         {data && (
-          <section className={sectionClass}>
+          <section className={`${sectionClass} lg:col-span-7`}>
             <h2 className="text-lg font-semibold">Score trend</h2>
             <TrendChart points={data.trend} />
           </section>
         )}
 
         <section
-          className={`glass rounded-xl border-accent p-6 ${data ? "" : "lg:col-span-2"}`}
+          className={`glass rounded-xl border-accent p-6 ${data ? "lg:col-span-5" : "lg:col-span-12"}`}
         >
           <h2 className="text-lg font-semibold">Start interview</h2>
           <p className="mt-1 text-sm text-muted">
@@ -212,12 +214,17 @@ const Dashboard = () => {
 
         {data && (
           <>
-            <section className={sectionClass}>
+            <section className={`${sectionClass} lg:col-span-7`}>
               <h2 className="text-lg font-semibold">Performance by round</h2>
-              <RoundBars rounds={data.byRound} />
+              <RoundTreemap rounds={data.byRound} />
             </section>
 
-            <section className={sectionClass}>
+            <section className={`${sectionClass} lg:col-span-5`}>
+              <h2 className="text-lg font-semibold">Strength by round</h2>
+              <RoundRadar rounds={data.byRound} />
+            </section>
+
+            <section className={`${sectionClass} lg:col-span-12`}>
               <h2 className="text-lg font-semibold">Recent interviews</h2>
               <RecentList interviews={data.recent} />
             </section>
