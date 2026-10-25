@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 
 const WARN_AWAY_MS = 30 * 1000;
-export const CHEAT_AWAY_MS = 1 * 30 * 1000;
+export const CHEAT_AWAY_MS = 60 * 1000;  // 1 minute
 const CHECK_MS = 1000;
 
 const useAntiCheat = ({ enabled, onWarn, onCheat }) => {
