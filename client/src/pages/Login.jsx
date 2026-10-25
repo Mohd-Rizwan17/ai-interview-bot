@@ -8,6 +8,7 @@ import {
   confirmLogin,
   loginUser,
 } from "../store/authSlice.js";
+import ProximityText from "../components/ProximityText.jsx";
 
 const inputClass =
   "w-full rounded-md border border-line bg-ground/40 px-3 py-2 text-ink placeholder:text-muted";
@@ -79,7 +80,9 @@ const Login = () => {
         onSubmit={handleSubmit}
         className="glass-strong w-full max-w-md rounded-xl p-6"
       >
-        <h1 className="text-2xl font-semibold">Welcome back</h1>
+        <h1 className="text-2xl font-semibold">
+          <ProximityText text="Welcome back" />
+        </h1>
         <p className="mt-1 text-sm text-muted">Login to continue practising.</p>
 
         {sessionEnded && (

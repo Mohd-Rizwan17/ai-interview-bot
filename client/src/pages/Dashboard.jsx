@@ -17,6 +17,7 @@ import { fetchStats } from "../store/statsSlice.js";
 import RoundRadar from "../components/RoundRadar.jsx";
 import RoundTreemap from "../components/RoundTreemap.jsx";
 import PageLoader from "../components/PageLoader.jsx";
+import ProximityText from "../components/ProximityText.jsx";
 
 
 const ROUND_TITLES = Object.fromEntries(
@@ -74,7 +75,9 @@ const Dashboard = () => {
   return (
     <main className="mx-auto max-w-5xl px-4 py-8">
       <header>
-        <h1 className="text-2xl font-semibold">Hi, {firstName}</h1>
+        <h1 className="text-2xl font-semibold">
+          <ProximityText text={`Hi, ${firstName ?? ""}`} />
+        </h1>
         <p className="text-sm text-muted">Your progress and performance.</p>
       </header>
 
