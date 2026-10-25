@@ -9,6 +9,8 @@ import {
   loginUser,
 } from "../store/authSlice.js";
 import ProximityText from "../components/ProximityText.jsx";
+import useCardSlide from "../hooks/useCardSlide.js";
+
 
 const inputClass =
   "w-full rounded-md border border-line bg-ground/40 px-3 py-2 text-ink placeholder:text-muted";
@@ -20,6 +22,7 @@ const Login = () => {
   );
   const [form, setForm] = useState({ email: "", password: "" });
   const isLoading = status === "loading";
+  const cardRef = useCardSlide();
 
   useEffect(() => {
     dispatch(clearAuthError());
@@ -77,6 +80,7 @@ const Login = () => {
   return (
     <main className="flex min-h-screen items-center justify-center p-4">
       <form
+        ref={cardRef}
         onSubmit={handleSubmit}
         className="glass-strong w-full max-w-md rounded-xl p-6"
       >
@@ -138,7 +142,7 @@ const Login = () => {
 
         <p className="mt-4 text-center text-sm text-muted">
           New here?{" "}
-          <Link to="/register" className="text-accent">
+          <Link to="/register" state={{ slide: 1 }} className="text-accent">
             Create an account
           </Link>
         </p>

@@ -6,7 +6,7 @@ const NotFound = () => {
   const canGoBack = location.key !== "default";
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-3 p-4 text-center">
+    <main className="page-enter flex min-h-screen flex-col items-center justify-center gap-3 p-4 text-center">
       <p className="font-mono text-8xl font-bold text-accent sm:text-9xl">
         404
       </p>

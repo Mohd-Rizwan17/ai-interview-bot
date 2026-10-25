@@ -253,18 +253,27 @@ body::before {
   background-color: var(--panel-solid);
   animation: slide-up-in 250ms ease-out;
 }
+.page-enter {
+  animation: slide-up-in 300ms ease-out;
+}
 
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
 
   body::before {
     animation: none !important;
+  }
+
+  .page-enter,
+  .modal,
+  .slide-in,
+  .toast-in {
+    animation-name: fade-in;
   }
 
   button:hover,

@@ -39,7 +39,7 @@ const Review = () => {
   }
 
   return (
-    <main className="mx-auto min-h-screen max-w-4xl px-4 py-8">
+    <main className="page-enter mx-auto min-h-screen max-w-4xl px-4 py-8">
       <Link to="/" className="text-sm text-muted">
         ← Dashboard
       </Link>

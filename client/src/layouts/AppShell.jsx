@@ -90,7 +90,10 @@ const AppShell = () => {
         </div>
       </aside>
 
-      <div className="min-w-0 flex-1 lg:overflow-y-auto">
+      <div
+        key={location.pathname}
+        className="page-enter min-w-0 flex-1 lg:overflow-y-auto"
+      >
         <Outlet />
       </div>
 

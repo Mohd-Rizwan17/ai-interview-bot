@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, Navigate } from "react-router";
 import { clearAuthError, registerUser } from "../store/authSlice.js";
 import ProximityText from "../components/ProximityText.jsx";
+import useCardSlide from "../hooks/useCardSlide.js";
 
 const inputClass =
   "w-full rounded-md border border-line bg-ground/40 px-3 py-2 text-ink placeholder:text-muted";
@@ -43,6 +44,7 @@ const Register = () => {
     confirmPassword: "",
   });
   const isLoading = status === "loading";
+  const cardRef = useCardSlide();
 
   useEffect(() => {
     dispatch(clearAuthError());
@@ -62,6 +64,7 @@ const Register = () => {
   return (
     <main className="flex min-h-screen items-center justify-center p-4">
       <form
+        ref={cardRef}
         onSubmit={handleSubmit}
         className="glass-strong w-full max-w-md rounded-xl p-6"
       >
@@ -112,7 +115,7 @@ const Register = () => {
 
         <p className="mt-4 text-center text-sm text-muted">
           Already have an account?{" "}
-          <Link to="/login" className="text-accent">
+          <Link to="/login" state={{ slide: -1 }} className="text-accent">
             Login
           </Link>
         </p>
