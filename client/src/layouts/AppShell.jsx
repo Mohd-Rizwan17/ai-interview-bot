@@ -1,3 +1,4 @@
+import { Menu, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useLocation, useNavigate } from "react-router";
@@ -17,9 +18,26 @@ const AppShell = () => {
   const location = useLocation();
   const user = useSelector((state) => state.auth.user);
   const [isTourOpen, setIsTourOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isAdmin = user.role === "admin";
   const firstName = user.fullName.split(" ")[0];
   const userId = user._id;
+
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!isMenuOpen) return undefined;
+
+    const handleKey = (event) => {
+      if (event.key === "Escape") setIsMenuOpen(false);
+    };
+
+    window.addEventListener("keydown", handleKey);
+
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [isMenuOpen]);
 
   useEffect(() => {
     if (isAdmin || location.pathname !== "/" || hasSeenTour(userId)) {
@@ -37,6 +55,8 @@ const AppShell = () => {
   }, [userId]);
 
   const startTour = () => {
+    setIsMenuOpen(false);
+
     if (location.pathname === "/") {
       setIsTourOpen(true);
       return;
@@ -48,7 +68,42 @@ const AppShell = () => {
 
   return (
     <div className="flex min-h-screen flex-col gap-4 p-3 lg:h-screen lg:flex-row lg:p-4">
-      <aside className="glass-strong flex flex-col rounded-xl lg:w-64 lg:shrink-0 lg:overflow-y-auto">
+      <header className="glass-strong sticky top-3 z-20 flex items-center gap-3 rounded-xl px-3 py-2 lg:hidden">
+        <button
+          type="button"
+          aria-label="Open menu"
+          aria-expanded={isMenuOpen}
+          aria-controls="app-sidebar"
+          onClick={() => setIsMenuOpen(true)}
+          className="rounded-md p-1.5 hover:bg-white/5"
+        >
+          <Menu size={20} />
+        </button>
+        <span
+          aria-hidden="true"
+          className="h-6 w-6 shrink-0 rounded-md bg-accent"
+        />
+        <p className="truncate text-sm font-semibold">AI Interview Bot</p>
+        <span className="ml-auto">
+          <Avatar name={firstName} online />
+        </span>
+      </header>
+
+      {isMenuOpen && (
+        <button
+          type="button"
+          aria-label="Close menu"
+          onClick={() => setIsMenuOpen(false)}
+          className="fixed inset-0 z-30 animate-[fade-in_200ms_ease-out] bg-black/60 lg:hidden"
+        />
+      )}
+
+      <aside
+        id="app-sidebar"
+        className={`glass-strong flex flex-col rounded-xl transition-[transform,visibility] duration-300 ease-out max-lg:fixed max-lg:inset-y-3 max-lg:left-3 max-lg:z-40 max-lg:w-72 max-lg:overflow-y-auto lg:w-64 lg:shrink-0 lg:overflow-y-auto ${
+          isMenuOpen ? "" : "max-lg:invisible max-lg:-translate-x-[110%]"
+        }`}
+      >
         <div className="flex items-center gap-2 px-4 py-4">
           <span
             aria-hidden="true"
@@ -60,6 +115,14 @@ const AppShell = () => {
               Admin
             </span>
           )}
+          <button
+            type="button"
+            aria-label="Close menu"
+            onClick={() => setIsMenuOpen(false)}
+            className="ml-auto rounded-md p-1 hover:bg-white/5 lg:hidden"
+          >
+            <X size={18} />
+          </button>
         </div>
 
         {isAdmin ? <AdminNav /> : <UserNav />}

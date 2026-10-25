@@ -31,6 +31,14 @@ const STEPS = [
 const findTarget = (step) =>
   step.target ? document.querySelector(`[data-tour="${step.target}"]`) : null;
 
+const isVisible = (element) => {
+  if (!element) return false;
+
+  const box = element.getBoundingClientRect();
+
+  return box.width > 0 && box.right > 0 && box.left < window.innerWidth;
+};
+
 const clamp = (value, min, max) =>
   Math.min(Math.max(value, min), Math.max(min, max));
 
@@ -94,7 +102,9 @@ const ProductTour = ({ open, onClose }) => {
   useEffect(() => {
     if (!open) return;
 
-    setSteps(STEPS.filter((item) => !item.target || findTarget(item)));
+    setSteps(
+      STEPS.filter((item) => !item.target || isVisible(findTarget(item))),
+    );
     setIndex(0);
   }, [open]);
 
