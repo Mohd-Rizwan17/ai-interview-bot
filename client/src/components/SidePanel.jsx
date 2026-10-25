@@ -1,4 +1,28 @@
+import { useEffect, useRef, useState } from "react";
 import Timer from "./Timer.jsx";
+
+const AnswerTick = ({ isAnswered }) => {
+  const wasAnswered = useRef(isAnswered);
+  const [isPopping, setIsPopping] = useState(false);
+
+  useEffect(() => {
+    if (isAnswered && !wasAnswered.current) setIsPopping(true);
+
+    wasAnswered.current = isAnswered;
+  }, [isAnswered]);
+
+  return (
+    <span
+      aria-label={isAnswered ? "Answered" : "Not answered"}
+      onAnimationEnd={() => setIsPopping(false)}
+      className={`inline-block ${isAnswered ? "text-ok" : "text-muted"} ${
+        isPopping ? "tick-pop" : ""
+      }`}
+    >
+      {isAnswered ? "✓" : "·"}
+    </span>
+  );
+};
 
 const SidePanel = ({
   round,
@@ -27,7 +51,6 @@ const SidePanel = ({
       <ol className="mt-4 flex flex-wrap gap-2 lg:flex-col lg:gap-1">
         {questions.map((question, index) => {
           const isActive = question.id === activeId;
-          const isAnswered = question.status === "answered";
 
           return (
             <li key={question.id}>
@@ -47,12 +70,7 @@ const SidePanel = ({
                 <span className="hidden flex-1 truncate text-sm lg:block">
                   {question.topic}
                 </span>
-                <span
-                  aria-label={isAnswered ? "Answered" : "Not answered"}
-                  className={isAnswered ? "text-ok" : "text-muted"}
-                >
-                  {isAnswered ? "✓" : "·"}
-                </span>
+                <AnswerTick isAnswered={question.status === "answered"} />
               </button>
             </li>
           );

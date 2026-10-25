@@ -1,14 +1,24 @@
 import { useState } from "react";
 import { detectDifficulty, parseQuestions } from "../utils/parseQuestions.js";
 import ImportReview from "./ImportReview.jsx";
+import { useSelector } from "react-redux";
+import ImportSteps from "./ImportSteps.jsx";
 
 const PREVIEW_CHARS = 200000;
+
+const stepFor = (isSaving, hasDrafts) => {
+  if (isSaving) return 3;
+
+  return hasDrafts ? 2 : 1;
+};
 
 const PdfImport = ({ onClose }) => {
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
   const isLoading = status === "loading";
+  const isSaving = useSelector((state) => state.customQuestions.busy);
+  const step = stepFor(isSaving, Boolean(result?.drafts.length));
 
   const handleFile = async (event) => {
     const [file] = event.target.files;
@@ -50,6 +60,8 @@ const PdfImport = ({ onClose }) => {
       <p className="mt-1 text-sm text-muted">
         The PDF is read in your browser. It is not uploaded anywhere.
       </p>
+
+      <ImportSteps current={step} />
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <label className="cursor-pointer rounded-md bg-accent px-4 py-2 text-sm font-semibold text-ground has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent">

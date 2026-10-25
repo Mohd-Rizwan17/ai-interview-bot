@@ -70,6 +70,12 @@ const MiniProjectRoom = ({ attemptId, isTimeUp, submit }) => {
       <header className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-(--panel-solid) px-4 py-2">
         <h1 className="font-semibold">{project.title}</h1>
         <p className={`flex items-center gap-2 text-sm ${saveLabel.tone}`}>
+          <span
+            aria-hidden="true"
+            className={`h-2 w-2 rounded-full bg-current transition-opacity duration-300 ${
+              saveStatus === "saved" ? "opacity-30" : "opacity-100"
+            } ${saveStatus === "saving" ? "motion-safe:animate-pulse" : ""}`}
+          />
           {saveLabel.text}
           {saveStatus === "error" && (
             <>

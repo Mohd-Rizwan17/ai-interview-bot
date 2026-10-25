@@ -137,13 +137,19 @@ const MyQuestions = () => {
       )}
 
       {showForm && (
-        <CustomQuestionForm
-          onDone={() => setShowForm(false)}
-          onCancel={() => setShowForm(false)}
-        />
+        <div className="slide-in">
+          <CustomQuestionForm
+            onDone={() => setShowForm(false)}
+            onCancel={() => setShowForm(false)}
+          />
+        </div>
       )}
 
-      {showImport && <PdfImport onClose={() => setShowImport(false)} />}
+      {showImport && (
+        <div className="slide-in">
+          <PdfImport onClose={() => setShowImport(false)} />
+        </div>
+      )}
 
       {visible.length === 0 ? (
         <p className="mt-8 text-muted">
@@ -152,7 +158,7 @@ const MyQuestions = () => {
             : `No ${filter} questions yet.`}
         </p>
       ) : (
-        <ul className="mt-6 flex flex-col gap-3">
+        <ul className="stagger-children mt-6 flex flex-col gap-3">
           {visible.map((question) => (
             <li key={question._id}>
               <CustomQuestionRow question={question} />
