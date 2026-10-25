@@ -5,7 +5,7 @@ const MAX_WEIGHT = 700;
 const RADIUS = 140;
 
 const canTrack = () =>
-  window.matchMedia("(hover: hover) and (pointer: fine)").matches &&
+  window.matchMedia("(any-hover: hover)").matches &&
   !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const ProximityText = ({ text }) => {
