@@ -1,42 +1,68 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, Navigate } from "react-router";
-import PageLoader from "../components/PageLoader.jsx";
+import { Link, Navigate, useNavigate } from "react-router";
+import ProximityText from "../components/ProximityText.jsx";
+import useCardSlide from "../hooks/useCardSlide.js";
 import {
   cancelConflict,
   clearAuthError,
   confirmLogin,
   loginUser,
 } from "../store/authSlice.js";
-import ProximityText from "../components/ProximityText.jsx";
-import useCardSlide from "../hooks/useCardSlide.js";
-
+import {
+  playWipe,
+  pointOf,
+  prefersReducedMotion,
+} from "../utils/circleWipe.js";
 
 const inputClass =
   "w-full rounded-md border border-line bg-ground/40 px-3 py-2 text-ink placeholder:text-muted";
 
 const Login = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { user, status, error, conflict, sessionEnded } = useSelector(
     (state) => state.auth,
   );
   const [form, setForm] = useState({ email: "", password: "" });
-  const isLoading = status === "loading";
+  const isWipingRef = useRef(false);
   const cardRef = useCardSlide();
+  const isLoading = status === "loading";
 
   useEffect(() => {
     dispatch(clearAuthError());
   }, [dispatch]);
 
-  if (user) return <Navigate to="/" replace />;
+  if (user && !isWipingRef.current) return <Navigate to="/" replace />;
 
   const handleChange = (event) => {
     setForm({ ...form, [event.target.name]: event.target.value });
   };
 
+  const runLogin = async (action, trigger) => {
+    const shouldWipe = !prefersReducedMotion();
+    const origin = pointOf(trigger);
+
+    isWipingRef.current = shouldWipe;
+
+    const result = await dispatch(action);
+    const isSuccess = result.meta.requestStatus === "fulfilled";
+
+    if (!shouldWipe || !isSuccess) {
+      isWipingRef.current = false;
+      return;
+    }
+
+    const release = await playWipe(origin);
+
+    isWipingRef.current = false;
+    navigate("/", { replace: true });
+    release();
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
-    dispatch(loginUser(form));
+    runLogin(loginUser(form), event.nativeEvent.submitter);
   };
 
   if (conflict) {
@@ -56,7 +82,12 @@ const Login = () => {
             <button
               type="button"
               disabled={isLoading}
-              onClick={() => dispatch(confirmLogin(conflict.confirmToken))}
+              onClick={(event) =>
+                runLogin(
+                  confirmLogin(conflict.confirmToken),
+                  event.currentTarget,
+                )
+              }
               className="rounded-md bg-accent px-4 py-2 font-semibold text-ground disabled:opacity-60"
             >
               {isLoading
