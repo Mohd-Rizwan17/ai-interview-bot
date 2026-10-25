@@ -74,7 +74,7 @@ const Dashboard = () => {
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8">
-      <header>
+      <header className="page-enter">
         <h1 className="text-2xl font-semibold">
           <ProximityText text={`Hi, ${firstName ?? ""}`} />
         </h1>
@@ -113,7 +113,7 @@ const Dashboard = () => {
         <section
           data-tour="stats"
           aria-label="Your stats"
-          className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+          className="stagger-children mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
         >
           <StatCard
             label="Interviews"
@@ -140,7 +140,7 @@ const Dashboard = () => {
         </section>
       )}
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-12">
+      <div className="stagger-children mt-6 grid gap-6 lg:grid-cols-12">
         {data && (
           <section className={`${sectionClass} lg:col-span-7`}>
             <h2 className="text-lg font-semibold">Score trend</h2>
