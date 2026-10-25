@@ -5,6 +5,7 @@ import Notice from "../components/Notice.jsx";
 import ReviewQuestion from "../components/ReviewQuestion.jsx";
 import ScoreCard from "../components/ScoreCard.jsx";
 import { fetchReview, resetReview } from "../store/reviewSlice.js";
+import PageLoader from "../components/PageLoader.jsx";
 
 const sumOf = (attempts, key) =>
   attempts.reduce((sum, attempt) => sum + attempt[key], 0);
