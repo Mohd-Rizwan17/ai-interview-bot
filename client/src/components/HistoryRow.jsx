@@ -32,7 +32,11 @@ const HistoryRow = ({ interview }) => {
   const target = targetFor(interview);
   const canDelete = interview.status !== "in_progress";
   const hasScore =
-    interview.status === "completed" || interview.status === "ended_cheating";
+    (interview.status === "completed" ||
+      interview.status === "ended_cheating") &&
+    interview.totalMarks > 0;
+  const isUngraded =
+    interview.status === "completed" && interview.totalMarks === 0;
   const showProgress =
     interview.status === "in_progress" || interview.status === "incomplete";
   const roundCount = interview.rounds.length;
@@ -62,6 +66,7 @@ const HistoryRow = ({ interview }) => {
               {interview.obtainedMarks} / {interview.totalMarks}
             </p>
           )}
+          {isUngraded && <p className="text-sm text-muted">Not graded</p>}
           {target && (
             <p className="text-xs text-muted">
               {interview.status === "in_progress"
