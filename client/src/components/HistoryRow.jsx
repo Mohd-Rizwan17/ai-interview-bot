@@ -76,7 +76,7 @@ const HistoryRow = ({ interview }) => {
         <div className="mt-3">
           <div className="h-1.5 rounded-full bg-line">
             <div
-              className="h-full rounded-full bg-accent"
+              className="bar-fill h-full rounded-full bg-accent"
               style={{ width: `${interview.progressPercent}%` }}
             />
           </div>

@@ -173,7 +173,7 @@ const History = () => {
           </p>
         )
       ) : (
-        <ul className="mt-6 flex flex-col gap-3">
+        <ul className="stagger-children mt-6 flex flex-col gap-3">
           {items.map((interview) => (
             <li key={interview._id}>
               <HistoryRow interview={interview} />

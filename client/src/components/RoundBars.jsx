@@ -29,7 +29,7 @@ const RoundBars = ({ rounds }) => {
           </div>
           <div className="mt-1 h-1.5 rounded-full bg-line">
             <div
-              className={`h-full rounded-full ${barTone(round.percent)}`}
+              className={`bar-fill h-full rounded-full ${barTone(round.percent)}`}
               style={{ width: `${round.percent}%` }}
             />
           </div>

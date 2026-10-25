@@ -180,24 +180,26 @@ const InterviewRoom = () => {
     return <Navigate to={`/interview/${id}/review`} replace />;
   }
 
-  if (roomCheated) {
-    return (
-      <Notice title="Interview ended">
-        <p className="text-sm text-danger">
-          You stayed away from the interview window for too long, so this
-          interview was ended and marked with a cheating flag. Answers saved so
-          far have been graded.
-        </p>
-        <Link
-          to={`/interview/${id}/review`}
-          replace
-          className="mt-4 inline-block rounded-md bg-accent px-4 py-2 text-sm font-semibold text-ground"
-        >
-          View review
-        </Link>
-      </Notice>
-    );
-  }
+ if (roomCheated) {
+   return (
+     <div className="cheat-alert flex min-h-screen items-center justify-center overflow-hidden">
+       <Notice title="Interview ended">
+         <p className="text-sm text-danger">
+           You stayed away from the interview window for too long, so this
+           interview was ended and marked with a cheating flag. Answers saved so
+           far have been graded.
+         </p>
+         <Link
+           to={`/interview/${id}/review`}
+           replace
+           className="mt-4 inline-block rounded-md bg-accent px-4 py-2 text-sm font-semibold text-ground"
+         >
+           View review
+         </Link>
+       </Notice>
+     </div>
+   );
+ }
 
   if (roomError) {
     return (
