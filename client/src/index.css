@@ -273,6 +273,18 @@ body::before {
   }
 }
 
+@keyframes timer-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(1.06);
+  }
+}
+
 .modal {
   background-color: var(--panel-solid);
   animation: modal-in 200ms ease-out;
@@ -330,6 +342,15 @@ body::before {
     cheat-pulse 1.4s ease-in-out 2;
 }
 
+.timer-pulse {
+  transform-origin: left;
+  animation: timer-pulse 1.6s ease-in-out infinite;
+}
+
+.timer-pulse-fast {
+  animation-duration: 0.8s;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -363,6 +384,10 @@ body::before {
 
   .cheat-alert {
     animation: fade-in 300ms ease-out;
+  }
+
+    .timer-pulse {
+    animation: none;
   }
 
   .modal::backdrop {

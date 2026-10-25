@@ -11,6 +11,13 @@ const toneFor = (seconds) => {
   return "text-ink";
 };
 
+const pulseFor = (seconds) => {
+  if (seconds <= 0) return "";
+  if (seconds <= 10) return "timer-pulse timer-pulse-fast";
+  if (seconds <= 60) return "timer-pulse";
+  return "";
+};
+
 const Timer = ({ secondsLeft }) => {
   if (secondsLeft === null) return null;
 
@@ -19,7 +26,7 @@ const Timer = ({ secondsLeft }) => {
       <p className="text-xs uppercase tracking-wide text-muted">Time left</p>
       <p
         role="timer"
-        className={`font-mono text-3xl font-medium ${toneFor(secondsLeft)}`}
+        className={`w-fit font-mono text-3xl font-medium ${toneFor(secondsLeft)} ${pulseFor(secondsLeft)}`}
       >
         {format(secondsLeft)}
       </p>
