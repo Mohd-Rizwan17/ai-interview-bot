@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const TIP_WIDTH = 320;
 const TIP_HEIGHT = 200;
@@ -37,6 +37,19 @@ const isVisible = (element) => {
   const box = element.getBoundingClientRect();
 
   return box.width > 0 && box.right > 0 && box.left < window.innerWidth;
+};
+
+const readRect = (element) => {
+  if (!element) return null;
+
+  const box = element.getBoundingClientRect();
+
+  return {
+    top: box.top,
+    left: box.left,
+    width: box.width,
+    height: box.height,
+  };
 };
 
 const clamp = (value, min, max) =>
@@ -91,8 +104,10 @@ const spotlightStyle = (rect) =>
         boxShadow: "0 0 0 9999px rgb(0 0 0 / 0.6)",
       };
 
-const ProductTour = ({ open, onClose }) => {
-  const [steps, setSteps] = useState([]);
+const ProductTour = ({ onClose }) => {
+  const [steps] = useState(() =>
+    STEPS.filter((item) => !item.target || isVisible(findTarget(item))),
+  );
   const [index, setIndex] = useState(0);
   const [rect, setRect] = useState(null);
   const nextRef = useRef(null);
@@ -100,66 +115,22 @@ const ProductTour = ({ open, onClose }) => {
   const isLast = index === steps.length - 1;
 
   useEffect(() => {
-    if (!open) return;
+    findTarget(step)?.scrollIntoView({ block: "nearest" });
 
-    setSteps(
-      STEPS.filter((item) => !item.target || isVisible(findTarget(item))),
-    );
-    setIndex(0);
-  }, [open]);
-
-  useLayoutEffect(() => {
-    if (!open || !step) return;
-
-    const element = findTarget(step);
-
-    element?.scrollIntoView({ block: "nearest" });
-
-    if (!element) {
-      setRect(null);
-      return;
-    }
-
-    const box = element.getBoundingClientRect();
-
-    setRect({
-      top: box.top,
-      left: box.left,
-      width: box.width,
-      height: box.height,
-    });
-  }, [open, step]);
-
-  useEffect(() => {
-    if (!open || !step) return undefined;
-
-    const measure = () => {
-      const element = findTarget(step);
-
-      if (!element) return;
-
-      const box = element.getBoundingClientRect();
-
-      setRect({
-        top: box.top,
-        left: box.left,
-        width: box.width,
-        height: box.height,
-      });
-    };
+    const measure = () => setRect(readRect(findTarget(step)));
+    const frameId = requestAnimationFrame(measure);
 
     window.addEventListener("resize", measure);
     window.addEventListener("scroll", measure, true);
 
     return () => {
+      cancelAnimationFrame(frameId);
       window.removeEventListener("resize", measure);
       window.removeEventListener("scroll", measure, true);
     };
-  }, [open, step]);
+  }, [step]);
 
   useEffect(() => {
-    if (!open) return undefined;
-
     const handleKey = (event) => {
       if (event.key === "Escape") onClose();
       if (event.key === "ArrowLeft")
@@ -173,13 +144,11 @@ const ProductTour = ({ open, onClose }) => {
     window.addEventListener("keydown", handleKey);
 
     return () => window.removeEventListener("keydown", handleKey);
-  }, [open, isLast, onClose]);
+  }, [isLast, onClose]);
 
   useEffect(() => {
-    if (open && step) nextRef.current?.focus();
-  }, [open, step]);
-
-  if (!open || !step) return null;
+    nextRef.current?.focus();
+  }, [step]);
 
   const handleNext = () => {
     if (isLast) onClose();

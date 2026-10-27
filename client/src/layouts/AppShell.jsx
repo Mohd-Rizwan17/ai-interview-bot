@@ -18,26 +18,26 @@ const AppShell = () => {
   const location = useLocation();
   const user = useSelector((state) => state.auth.user);
   const [isTourOpen, setIsTourOpen] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [menuPath, setMenuPath] = useState(null);
   const isAdmin = user.role === "admin";
   const firstName = user.fullName.split(" ")[0];
   const userId = user._id;
+  const isMenuOpen = menuPath === location.pathname;
 
-  useEffect(() => {
-    setIsMenuOpen(false);
-  }, [location.pathname]);
+  const openMenu = () => setMenuPath(location.pathname);
+  const closeMenu = useCallback(() => setMenuPath(null), []);
 
   useEffect(() => {
     if (!isMenuOpen) return undefined;
 
     const handleKey = (event) => {
-      if (event.key === "Escape") setIsMenuOpen(false);
+      if (event.key === "Escape") closeMenu();
     };
 
     window.addEventListener("keydown", handleKey);
 
     return () => window.removeEventListener("keydown", handleKey);
-  }, [isMenuOpen]);
+  }, [isMenuOpen, closeMenu]);
 
   useEffect(() => {
     if (isAdmin || location.pathname !== "/" || hasSeenTour(userId)) {
@@ -55,7 +55,7 @@ const AppShell = () => {
   }, [userId]);
 
   const startTour = () => {
-    setIsMenuOpen(false);
+    closeMenu();
 
     if (location.pathname === "/") {
       setIsTourOpen(true);
@@ -74,7 +74,7 @@ const AppShell = () => {
           aria-label="Open menu"
           aria-expanded={isMenuOpen}
           aria-controls="app-sidebar"
-          onClick={() => setIsMenuOpen(true)}
+          onClick={openMenu}
           className="rounded-md p-1.5 hover:bg-white/5"
         >
           <Menu size={20} />
@@ -93,7 +93,7 @@ const AppShell = () => {
         <button
           type="button"
           aria-label="Close menu"
-          onClick={() => setIsMenuOpen(false)}
+          onClick={closeMenu}
           className="fixed inset-0 z-30 animate-[fade-in_200ms_ease-out] bg-black/60 lg:hidden"
         />
       )}
@@ -118,7 +118,7 @@ const AppShell = () => {
           <button
             type="button"
             aria-label="Close menu"
-            onClick={() => setIsMenuOpen(false)}
+            onClick={closeMenu}
             className="ml-auto rounded-md p-1 hover:bg-white/5 lg:hidden"
           >
             <X size={18} />
@@ -160,7 +160,7 @@ const AppShell = () => {
         <Outlet />
       </div>
 
-      {!isAdmin && <ProductTour open={isTourOpen} onClose={closeTour} />}
+      {!isAdmin && isTourOpen && <ProductTour onClose={closeTour} />}
     </div>
   );
 };

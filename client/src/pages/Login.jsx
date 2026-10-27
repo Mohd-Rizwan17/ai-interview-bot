@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, Navigate, useNavigate } from "react-router";
 import ProximityText from "../components/ProximityText.jsx";
@@ -25,7 +25,7 @@ const Login = () => {
     (state) => state.auth,
   );
   const [form, setForm] = useState({ email: "", password: "" });
-  const isWipingRef = useRef(false);
+  const [isWiping, setIsWiping] = useState(false);
   const cardRef = useCardSlide();
   const isLoading = status === "loading";
 
@@ -33,7 +33,7 @@ const Login = () => {
     dispatch(clearAuthError());
   }, [dispatch]);
 
-  if (user && !isWipingRef.current) return <Navigate to="/" replace />;
+  if (user && !isWiping) return <Navigate to="/" replace />;
 
   const handleChange = (event) => {
     setForm({ ...form, [event.target.name]: event.target.value });
@@ -43,19 +43,17 @@ const Login = () => {
     const shouldWipe = !prefersReducedMotion();
     const origin = pointOf(trigger);
 
-    isWipingRef.current = shouldWipe;
+    setIsWiping(shouldWipe);
 
     const result = await dispatch(action);
-    const isSuccess = result.meta.requestStatus === "fulfilled";
 
-    if (!shouldWipe || !isSuccess) {
-      isWipingRef.current = false;
+    if (!shouldWipe || result.meta.requestStatus !== "fulfilled") {
+      setIsWiping(false);
       return;
     }
 
     const release = await playWipe(origin);
 
-    isWipingRef.current = false;
     navigate("/", { replace: true });
     release();
   };
