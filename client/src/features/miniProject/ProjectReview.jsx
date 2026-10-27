@@ -1,17 +1,15 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import CodeEditor from "./components/CodeEditor.jsx";
 import FileTree from "./components/FileTree.jsx";
 import ProjectAside from "./components/ProjectAside.jsx";
 import { loadProject, resetProject } from "./miniProjectSlice.js";
-import { useEffect, useState } from "react";
 
 const STATUS_LABELS = {
   answered: { label: "Code submitted", tone: "text-ok" },
   skipped: { label: "Skipped", tone: "text-warn" },
   timed_out: { label: "Time up", tone: "text-warn" },
 };
-const [isOpen, setIsOpen] = useState(false);
 
 const NOT_ATTEMPTED = { label: "Not attempted", tone: "text-muted" };
 
@@ -20,6 +18,7 @@ const ProjectReview = ({ attempt }) => {
   const { status, error, project, files } = useSelector(
     (state) => state.miniProject,
   );
+  const [isOpen, setIsOpen] = useState(false);
   const verdict = STATUS_LABELS[attempt.status] ?? NOT_ATTEMPTED;
 
   useEffect(() => {
