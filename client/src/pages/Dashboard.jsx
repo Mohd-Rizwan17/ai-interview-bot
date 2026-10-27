@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router";
 import RecentList from "../components/RecentList.jsx";
-import RoundBars from "../components/RoundBars.jsx";
 import StatCard from "../components/StatCard.jsx";
 import TrendChart from "../components/TrendChart.jsx";
 import { DIFFICULTIES, ROUNDS } from "../constants/rounds.js";
