@@ -4,12 +4,14 @@ import CodeEditor from "./components/CodeEditor.jsx";
 import FileTree from "./components/FileTree.jsx";
 import ProjectAside from "./components/ProjectAside.jsx";
 import { loadProject, resetProject } from "./miniProjectSlice.js";
+import { useEffect, useState } from "react";
 
 const STATUS_LABELS = {
   answered: { label: "Code submitted", tone: "text-ok" },
   skipped: { label: "Skipped", tone: "text-warn" },
   timed_out: { label: "Time up", tone: "text-warn" },
 };
+const [isOpen, setIsOpen] = useState(false);
 
 const NOT_ATTEMPTED = { label: "Not attempted", tone: "text-muted" };
 
@@ -50,11 +52,25 @@ const ProjectReview = ({ attempt }) => {
     }
 
     return (
-      <div className="mt-4 flex flex-col overflow-hidden rounded-lg border border-line lg:h-[32rem] lg:flex-row">
-        <FileTree disabled />
-        <CodeEditor readOnly />
-        <ProjectAside project={project} />
-      </div>
+      <>
+        <button
+          type="button"
+          onClick={() => setIsOpen((value) => !value)}
+          aria-expanded={isOpen}
+          className="mt-4 w-full rounded-md border border-line px-4 py-2 text-sm hover:bg-white/5 lg:hidden"
+        >
+          {isOpen ? "Hide code" : "Show code (best on desktop)"}
+        </button>
+        <div
+          className={`mt-4 flex flex-col overflow-hidden rounded-lg border border-line lg:h-[32rem] lg:flex-row ${
+            isOpen ? "" : "max-lg:hidden"
+          }`}
+        >
+          <FileTree disabled />
+          <CodeEditor readOnly />
+          <ProjectAside project={project} />
+        </div>
+      </>
     );
   };
 

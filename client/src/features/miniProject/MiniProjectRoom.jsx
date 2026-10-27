@@ -92,6 +92,10 @@ const MiniProjectRoom = ({ attemptId, isTimeUp, submit }) => {
         </p>
       </header>
 
+      <p className="border-b border-line px-4 py-2 text-xs text-muted lg:hidden">
+        Code editing works best on a larger screen.
+      </p>
+
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         <FileTree disabled={isTimeUp} />
         <CodeEditor readOnly={isTimeUp} />
