@@ -1,49 +1,43 @@
 # PRD: AI Interview Bot
 
-## What we are building
-A MERN web app where a user practises mock interviews with an AI interviewer. The AI asks questions, listens to answers, cross-questions, scores, and explains better answers.
+## What it is
+A mock interview practice app for MERN freshers. A user picks rounds and a difficulty, answers timed questions, and gets a graded review. An admin manages the question bank and watches overall performance.
+
+No AI or LLM is called at runtime. Questions come from a local question bank, generators and admin-added custom questions. Theory answers are graded with a keyword rubric.
 
 ## Target users
-- Freshers and juniors preparing for MERN / full stack interviews
-- Students preparing for aptitude and reasoning rounds
+- **User (student/fresher):** practises rounds, reviews mistakes, tracks progress.
+- **Admin:** builds the question bank (manual add, PDF import), sees platform stats and the leaderboard. Admin is set by editing `role: "admin"` in MongoDB Compass. There is no UI for it.
 
-## Interview setup (Dashboard)
-- Company name
-- Type: Technical, Aptitude, Reasoning, HR, Mixed
-- Field (Technical only): Full Stack, Frontend, Backend
-- Difficulty: Easy, Medium, Hard
-- Optional PDF upload: questions from the PDF are mixed with AI questions
+## Features
 
-## Interview room
-- Question formats: MCQ, practical (write code), descriptive
-- Timer on every question; time out counts as unanswered
-- AI reads each question aloud (browser speech), "Read again" button
-- After an answer the AI evaluates it, then asks up to 2 follow-ups ("why this approach", "what else could you use")
-- If the user cannot answer, the AI gives a clear ideal answer
-- Hint button costs 1 mark
-- Side panel: "Your PDF questions" and "AI questions", current one highlighted
-- Anti-cheat: switching tab, opening a new tab or leaving the page ends the interview and adds a cheating flag
+### User
+- Register and login (JWT in an httpOnly cookie). One device at a time: a second login gets a 409 and must confirm, which logs the other device out.
+- Rounds: Aptitude, Reasoning, DSA, Frontend, Backend, My Questions, Mini Project. Rounds run in the order picked, 10 questions per round.
+- Difficulty: easy, medium, hard.
+- Question formats: MCQ, practical, descriptive, project (mini project).
+- Hint costs 1 mark. Voice reads the question aloud.
+- Anti-cheat: staying away from the window for 1 minute ends the interview with a cheating flag. A page refresh deducts marks after the first one.
+- Review page with correct answers, model answers, explanations. "Show only mistakes" filter.
+- History with search, pagination, delete, and auto-delete after 3 to 30 days.
+- Dashboard: stats cards, score trend, round treemap, round radar, recent interviews, Start card.
+- Product tour on first visit, "Take a tour" to replay.
 
-## After the interview
-- Scoreboard: total, obtained, right, wrong, cheating flag
-- Mistakes review with the ideal answer for each mistake
-- Random mini task (5 to 10 minutes), different every time
-- History: completed, incomplete (with percent done, cannot be opened) and cheating-ended interviews
-- Weak topics (JavaScript, React, MongoDB, Node.js, Aptitude, and so on)
+### Admin
+- Overview: question counts, how questions reach users, recent imports, top performers, needs-more-questions, all-users round performance.
+- My Questions: add, filter, delete (max 200).
+- PDF import: read in the browser, review drafts, edit, save.
+- Leaderboard: podium for top 3, table from rank 4. Rank = average score of completed interviews, ties by more interviews. Only role "user".
 
-## Accounts
-- Register, login, logout; forgot password; Google signup
-- Profile: edit username and personal details; change password
-- One device at a time: a second login must confirm, which logs out the first device and marks its running interview incomplete
-- Passwords are only ever stored as bcrypt hashes and never returned or shown anywhere
+### Mini Project round
+Write code in the browser (Monaco, file tree, preview iframe, console). Not graded, saved automatically.
 
-## Extras
-Adaptive difficulty, resume-based questions, HR round, report download, light and dark theme.
+## Out of scope (for now)
+Profile pictures, theory/Q&A PDF parser, HR round, scheduled auto-delete, "never delete" retention, light theme.
 
-## Not in version 1
-- Running user code on the server (AI reviews code instead)
-- Live human interviewers
-- Native mobile apps (responsive web only)
-
-## Success looks like
-A user can register, take a timed interview with voice and follow-ups, see a correct scoreboard, review mistakes, and find the interview in history.
+## Known limits
+- Mini project: cross-file ES module imports do not run in the preview, an infinite loop can hang the tab, Monaco loads from a CDN (needs internet), requirement ticks are on screen only.
+- Stats come only from interviews that still exist. Auto-delete and "Delete all" also lower the stats.
+- Refresh penalty is taken from interview-level marks, so round bars can add up to 1 mark more than the total.
+- Recent imports are grouped by source name. The same PDF name imported twice is one row.
+- The admin leaderboard and round stats read all completed interviews into memory. Fine for small data, needs aggregation later.

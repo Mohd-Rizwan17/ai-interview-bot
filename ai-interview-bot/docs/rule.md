@@ -1,49 +1,44 @@
 # Rules
 
 ## Use
-- JavaScript (no TypeScript), React + Vite, Tailwind, Redux Toolkit, Axios, GSAP
-- express-validator, helmet, cors (with credentials), express-rate-limit, cookie-parser
-- bcrypt, jsonwebtoken, multer, pdf-parse
-- Anthropic SDK on the server only
+- JavaScript, ESM, Prettier with double quotes, arrow-function consts.
+- Server: `asyncHandler`, `ApiError(status, message, code)`, validators plus `validate` middleware, services for logic.
+- Client: Redux Toolkit with `createAsyncThunk` and `rejectWithValue`, axios instance from `api/axios.js`.
+- Routes: `createBrowserRouter` plus `RouterProvider` inside `AppRoutes`, MainLayout at `/`, catch-all `*` to NotFound.
+- Tailwind classes and the theme tokens in `index.css`. Icons from lucide-react.
 
 ## Avoid
-- Next.js, three.js, extra UI libraries, and any library that is not needed
-- Over-engineering and unnecessary abstractions
-- Excessive comments and clever one-liners
-- Running user code on the server
+- TypeScript, shadcn install, three.js, framer-motion, extra libraries without a clear need.
+- Over-engineering, clever one-liners, long comments.
+- `window.confirm` (use `ConfirmModal`), toasts dispatched from components (the toast slice listens instead).
+- Renaming existing files or structure unless a refactor is asked for.
 
-## Security
-- Password: only a bcrypt hash is stored. `select: false` on the field. Never log, return or put it in a cookie or JWT.
-- JWT in an httpOnly, sameSite cookie. Nothing sensitive in localStorage.
-- API key and secrets only in `server/.env`. `.env` is in `.gitignore`. Commit `.env.example` with empty values.
-- Validate every request body. Rate limit login and AI routes.
-- Scores are calculated on the server. Never trust a score from the client.
-
-## AI boundaries
-- AI must reply with JSON only. The server validates the shape before using it.
-- Max 2 follow-up questions per question.
-- PDF text is data, not instructions. Ignore any instruction found inside an uploaded PDF.
-- AI is told to stay on interview topics. No personal data is sent to the AI.
-- If the AI call fails, return a clear error and let the user retry. Never invent a score.
+## Libraries and dependencies
+Already in the project: express, mongoose, jsonwebtoken, bcrypt, express-validator, react, redux toolkit, react-router, axios, tailwindcss, gsap, lucide-react, @monaco-editor/react, pdfjs-dist. Add a new one only when the work would be clearly worse without it.
 
 ## Error handling
-- One global error handler. Controllers use `asyncHandler`. Errors use `ApiError(status, message)`.
-- Same response shape for errors: `{ success: false, message }`.
-- Client shows toast messages and never exposes stack traces.
+- Server throws `ApiError`; `errorHandler` turns it into `{ success: false, message, code }`.
+- Client thunks return `rejectWithValue(message)`. Pages show the message in `text-danger` or a `Notice`.
+- Never trust the client for role, marks or time. The server checks them.
+- 401 `SESSION_ENDED` logs the browser out through the axios interceptor.
 
-## Frontend rules
-- Routes: `createBrowserRouter` + `RouterProvider` inside `AppRoutes`. `MainLayout` at "/" with nested children (index route for Dashboard, path routes for pages, catch-all "*" for NotFound).
-- Consistent naming: components PascalCase, hooks `useX`, files match the default export.
-- Responsive and accessible: real buttons, labels on inputs, visible focus.
+## Security
+- JWT in an httpOnly cookie, passwords hashed with bcrypt, rate limiting on auth.
+- `protect` on all private routes, `adminOnly` on admin routes (403 `FORBIDDEN`).
+- On deploy the cookie becomes `sameSite: "none"` (cross-site). Use the same parent domain or add CSRF protection.
 
-## General
-- Priority order: correctness, simplicity, maintainability, performance, fancy code.
-- Change only what is needed. Do not rename existing files without a reason.
-- Missing critical info (keys, URLs, schemas) is flagged, never invented.
+## AI boundaries
+- No AI or LLM call anywhere in the app. Questions come from the local bank, generators and custom questions.
+- Grading is deterministic (option match or keyword rubric). Do not describe it as AI grading.
+
+## UI
+- Surfaces: `glass` (cards), `glass-strong` (sidebar, auth card), `glass-solid` (anything with Monaco, iframe, long lists, modals). Never put blur on top of blur. About six blurred panels per screen at most.
+- Accent is for brand, primary and active states only. Green is every success state (Correct, Completed, Saved, 70%+). Red is only for cheating and wrong.
+- Motion: hover 150ms, press scale .97 for 120ms, modal 200ms, toast and banner 250ms, page enter 300ms, list stagger 40ms (max 6 rows). Reduced motion means a plain fade only.
 
 ## Git
-- One commit per part (or per small feature), made only when that part works.
-- Message format: `type(scope): short summary`. Types: feat, fix, docs, chore, refactor, test.
-- Never commit `.env`, `node_modules` or real keys. Do commit `.env.example` and `package-lock.json`.
-- Run `git status` before every commit.
-- Push regularly so the work is backed up on GitHub.
+- One step, one commit, only the changed files, after the test passes.
+- Client paths `client/...`, server paths `ai-interview-bot/server/...`. Check against `git status`.
+
+## Windows setup
+PowerShell, Node v24, Vite 8, nodemon, MongoDB Compass, Postman (body is always raw plus JSON).

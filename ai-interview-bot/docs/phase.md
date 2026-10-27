@@ -1,32 +1,32 @@
 # Phases
 
-## Phase 1: Core app
-- [x] Part 1: Server setup. package.json, server.js, app.js, config/db.js, config/env.js, middlewares/errorHandler, utils/ApiError + asyncHandler, `.env.example`
-  - Commit: `feat(server): set up Express server with MongoDB connection and error handling`
-- [x] Part 2: Auth. User model, register, login, logout, me, single-device session, auth middleware
-  - Commit: `feat(auth): add register, login, logout and single-device sessions`
-- [x] Part 3: Interview models. Interview, Attempt, routes, controllers, progress and status handling
-  - Commit: `feat(interview): add Interview and Attempt models with progress handling`
-- [ ] Part 4: AI service. Generate MCQ, practical and aptitude/reasoning questions; evaluate; follow-ups; ideal answer
-  - Commit: `feat(ai): add question generation, evaluation and follow-ups with Claude`
-- [ ] Part 5: PDF service. Upload, extract text, extract questions
-  - Commit: `feat(pdf): add PDF upload and question extraction`
-- [ ] Part 6: Client base. Vite + Tailwind, AppRoutes, MainLayout, Redux, Axios, Login, Register, Dashboard, ConstellationGrid
-  - Commit: `feat(client): set up React app with routes, auth pages and dashboard`
-- [ ] Part 7: Interview room. Timer, question formats, side panel, voice, anti-cheat
-  - Commit: `feat(interview-room): add timer, question formats, voice and anti-cheat`
+Status: done / in progress / pending
 
-## Phase 2: Extras
-- [ ] Scoreboard and mistakes review
-- [ ] Random mini task
-- [ ] History and weak topics
-- [ ] Profile edit and change password
-- [ ] Hint system and adaptive difficulty
-- [ ] Forgot password (needs email SMTP details) and Google signup (needs Google OAuth client)
-- [ ] HR round, resume-based questions, report download
-- [ ] Animations from the animation map
-- [ ] Testing and QA
-- [ ] Deployment and maintenance
+## Phase 1: Login and auth (done)
+Register, login, logout, JWT cookie, single-device login with confirm, `SESSION_ENDED`, roles (user, admin), `protect`, `adminOnly`.
 
-## Done when
-Each part works end to end and is tested with Postman (server) or in the browser (client) before the next part starts.
+## Phase 2: Dashboard (done)
+- Interview flow: rounds, timer, hint, voice, anti-cheat, refresh penalty, review.
+- User stats API and Dashboard. Admin stats API and Overview.
+- Leaderboard (podium, table).
+- Bento dashboard: score trend, round treemap, round radar, recent interviews.
+
+## Phase 3: CRUD (done)
+- Custom questions: add, list, delete (max 200), counts per difficulty.
+- PDF import: parse in the browser, review, edit, save.
+- History: search, pagination, delete, delete all, retention (3 to 30 days).
+
+## Phase 4: Additional features (done)
+- Mini Project round (Monaco, file tree, preview, autosave).
+- Redesign: Modern Minimal (user) and Lime Frost (admin) themes, glass surfaces, dot-grid auth background, floating sidebar, mobile drawer, dot loader, 404, product tour, proximity heading.
+- Animations: page enter, auth card slide, login circle wipe, list stagger, bar fill, cheating alert, timer pulse, tick pop, import stepper.
+
+## Phase 5: Testing and QA (in progress)
+- Build and lint are clean.
+- Mobile check done for the interview room and Review.
+- Pending: theory layout polish, a full manual regression (new user, interview, review, admin, mini project), Postman checks for admin-only routes.
+
+## Phase 6: Deployment and maintenance (pending)
+- Cookie `sameSite: "none"` and CSRF check, env docs, README.
+- Pick a host for the client, server and MongoDB.
+- Later: scheduled auto-delete sweep, "never delete" retention, theory PDF parser, HR round, light theme, profile pictures.

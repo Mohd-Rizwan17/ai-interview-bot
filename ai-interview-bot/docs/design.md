@@ -1,41 +1,42 @@
 # Design
 
-Mockup: https://claude.ai/artifact/ByhV8aSchdDPqzuNZR3ste
-
 ## Look
-Dark, focused, "terminal at night". Lime accent, amber for the timer and warnings, red only for cheating and wrong answers (always with text or an icon too).
+Dark, glassy, minimal. A floating glass sidebar over a soft aurora background. The theme changes with the role, set by `<html data-role>` from `MainLayout`.
 
-## Colors (dark)
-- Ground #0D1117, panel #151B23, border #263040
-- Text #E8EDF3, muted #9AA7B8
-- Accent #B6F24A, timer/warning #F5B94A, danger #F87171
-- Light theme: to be defined when the theme toggle is built
+## Themes
+| | User (Modern Minimal) | Admin (Lime Frost) |
+|---|---|---|
+| Ground | `#121212` | `#020617` |
+| Panel solid | `#1c1c1c` | `#0f172a` |
+| Accent | `#3b82f6` | `#aff33e` |
+| Accent 2 (gradient end) | `#60a5fa` | `#c8f56a` |
+| Ink / muted | `#ededed` / `#a3a3a3` | `#f8fafc` / `#94a3b8` |
+| Radius md / lg / xl | 4 / 6 / 10 px | 12 / 16 / 20 px |
+
+Login and Register use the user palette. Shared: ok `#4ade80`, warn `#f5b94a`, danger `#f87171`.
+
+Note: the Modern Minimal colours were read from a screenshot, not from the official token list. Lime Frost tokens come from 21st.dev.
 
 ## Typography
-- Space Grotesk for UI
-- JetBrains Mono for code and the timer
+Space Grotesk (variable, 300 to 700) and JetBrains Mono for numbers and code. Headings on Login, Register and Dashboard change weight near the cursor (mouse devices only, off with reduced motion).
 
-## Icons
-Stroke icons, 2px, 22px. Use lucide-react.
+## Surfaces
+- `glass`: cards. `glass-strong`: sidebar, auth card. `glass-solid`: modals, Monaco and iframe panels, long lists.
+- `bg-accent`: gradient from accent to accent 2, with a soft glow on primary buttons.
+- Tokens are `--glass-*` variables in `index.css`, so a light theme only needs new values.
 
-## Screens
-Login, Register, Dashboard (with profile and topic scores), Interview Room (desktop and mobile), Interview Ended (cheating), Login Conflict (phone), Session Ended (desktop), History, 404 page, Scoreboard (still to design).
+## Components
+- **Auth background:** `DotGrid` canvas (dots reveal from the centre, then twinkle at 30 fps). Static with reduced motion.
+- **Loader:** `DotLoader` inside `PageLoader`. It shows only after 400 ms of waiting, so fast pages never flash it.
+- **404:** large number, "Go back" only when the app has history.
+- **Avatar:** first letter, green dot in the sidebar.
+- **Bento dashboard:** trend line, round treemap (tile size by attempts, colour by score), round radar (3 or more graded rounds).
+- **Product tour:** custom spotlight, 4 steps, shown once per user per browser.
 
-## Animation map
-- Login and Register background: ConstellationGrid (Canvas 2D)
-- Login <-> Register: GSAP card slide
-- Login -> Dashboard: accent circle wipe, then stagger
-- Every route change: fade and slide up, 0.3s
-- Buttons: press scale, ripple, spinner
-- Theme toggle: View Transitions API circular reveal
-- Dashboard: slow dot-grid drift (CSS)
-- History: row stagger, progress bar fill
-- 404: flicker and bounce
-- Cheating screen: red pulse and shake
-- Interview room: timer pulse only
-
-## ConstellationGrid notes
-Take `isDark` as a prop, respect reduced motion, pause when the tab is hidden, connect only nearby nodes, lower density on mobile, and render as a fixed background layer.
+## Motion
+Hover 150ms, press scale .97 (120ms), modal 200ms, toast and banner 250ms, page enter 300ms (fade and 12px up), list stagger 40ms (max 6), tick pop 200ms, auth card slide 400ms, login circle wipe 600ms. Reduced motion: everything becomes a plain fade, dots and aurora stop.
 
 ## UI preference memory
-Follow the mockup. Responsive first. Inspiration shortcuts: /motion-example, /ui-ux-pro-max-example, /21st-dev-example.
+- Hinglish explanations, direct answer first.
+- Plan or blueprint before big UI work, with an animation map for animation work.
+- Inspiration shortcuts: `/motion-example` (motion.dev/examples), `/ui-ux-pro-max-example` (ui-ux-pro-max-skill.nextlevelbuilder.io), `/21st-dev-example` (21st.dev).
