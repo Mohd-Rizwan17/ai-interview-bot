@@ -14,6 +14,7 @@ import useAntiCheat, { CHEAT_AWAY_MS } from "../hooks/useAntiCheat.js";
 import useSpeech, { buildSpeechText } from "../hooks/useSpeech.js";
 import useTimer from "../hooks/useTimer.js";
 import PageLoader from "../components/PageLoader.jsx";
+import Timer from "../components/Timer.jsx";
 
 import {
   fetchHint,
@@ -114,6 +115,9 @@ const InterviewRoom = () => {
   const unanswered = questions.filter(
     (question) =>
       question.format !== "project" && question.status !== "answered",
+  ).length;
+  const answeredCount = questions.filter(
+    (question) => question.status === "answered",
   ).length;
   const speechText =
     activeQuestion && !isProject ? buildSpeechText(activeQuestion) : "";
@@ -256,6 +260,13 @@ const InterviewRoom = () => {
 
   return (
     <div className="flex min-h-screen flex-col lg:h-screen lg:flex-row">
+      <div className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-line bg-(--panel-solid) px-4 py-2 lg:hidden">
+        <p className="min-w-0 truncate text-sm font-semibold">{round.title}</p>
+        <p className="shrink-0 text-xs text-muted">
+          {answeredCount} / {questions.length}
+        </p>
+        <Timer compact secondsLeft={isTimeUp ? 0 : secondsLeft} />
+      </div>
       <SidePanel
         round={round}
         questions={questions}

@@ -18,8 +18,19 @@ const pulseFor = (seconds) => {
   return "";
 };
 
-const Timer = ({ secondsLeft }) => {
+const Timer = ({ secondsLeft, compact = false }) => {
   if (secondsLeft === null) return null;
+
+  if (compact) {
+    return (
+      <p
+        aria-hidden="true"
+        className={`shrink-0 font-mono text-lg font-medium ${toneFor(secondsLeft)} ${pulseFor(secondsLeft)}`}
+      >
+        {format(secondsLeft)}
+      </p>
+    );
+  }
 
   return (
     <div className="mt-4">

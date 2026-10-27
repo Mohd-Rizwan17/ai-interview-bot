@@ -46,7 +46,9 @@ const SidePanel = ({
       </p>
       <h2 className="mt-1 text-xl font-semibold">{round.title}</h2>
 
-      <Timer secondsLeft={secondsLeft} />
+      <div className="hidden lg:block">
+        <Timer secondsLeft={secondsLeft} />
+      </div>
 
       <ol className="mt-4 flex flex-wrap gap-2 lg:flex-col lg:gap-1">
         {questions.map((question, index) => {
