@@ -1,43 +1,86 @@
 # AI Interview Bot
 
-Practice mock interviews with an AI interviewer: MCQ and coding questions, aptitude and reasoning, voice, timer, follow-up questions, scoreboard and history.
+A mock interview practice app for MERN freshers. Pick rounds and a difficulty, answer timed questions, and get a graded review. An admin builds the question bank and watches performance.
 
-## Stack
-React (Vite) + Tailwind + Redux Toolkit + GSAP, Node.js + Express, MongoDB + Mongoose, Claude API.
+There is no AI call at runtime. Questions come from a local bank, generators and custom questions. Theory answers are graded with a keyword rubric.
 
-## Docs
-`prd.md`, `architecture.md`, `rule.md`, `phase.md`, `design.md`, `memory.md`
+## Features
+- Register and login with JWT in an httpOnly cookie, one device at a time
+- Rounds: Aptitude, Reasoning, DSA, Frontend, Backend, My Questions, Mini Project
+- Timer, hints, voice reading, anti-cheat, review with model answers
+- History with search, delete and auto-delete
+- User dashboard: score trend, round treemap, round radar
+- Admin: overview, leaderboard, custom questions, PDF import
+- Mini Project: code in the browser with Monaco and a live preview
+
+## Tech stack
+- **Server:** Node, Express 5, Mongoose 9, JWT, bcrypt, express-validator
+- **Client:** React 19, Vite 8, Tailwind v4, Redux Toolkit, react-router 8, axios, GSAP
+- **Database:** MongoDB
+
+## Project structure
+```
+client/                    React app
+ai-interview-bot/server/   Express API
+docs/                      prd, architecture, rule, phase, design, memory
+```
+
+## Requirements
+- Node v24
+- MongoDB (local with Compass, or Atlas)
 
 ## Setup
-```bash
-git clone <your-repo-url>
-cd ai-interview-bot
 
-cd server && npm install
-cp .env.example .env     # then fill in the values
+### 1. Server
+```powershell
+cd ai-interview-bot/server
+npm install
+copy .env.example .env
+```
+Fill in `.env` (see the table below), then:
+```powershell
 npm run dev
+```
+The API runs on `http://localhost:5000` by default.
 
-cd ../client && npm install
+### 2. Client
+```powershell
+cd client
+npm install
 npm run dev
 ```
+The app runs on `http://localhost:5173`. Make sure the server `CLIENT_URL` is exactly this address.
 
-## Environment variables (`server/.env`)
-```
-PORT=5000
-CLIENT_URL=http://localhost:5173
-MONGO_URI=
-JWT_SECRET=
-JWT_EXPIRES_IN=7d
-ANTHROPIC_API_KEY=
-ANTHROPIC_MODEL=claude-sonnet-5-5
-```
-Later (Phase 2): `GOOGLE_CLIENT_ID`, `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`.
+## Environment variables (server)
+| Name | Required | Default | Notes |
+|---|---|---|---|
+| `MONGO_URI` | yes | none | MongoDB connection string |
+| `JWT_SECRET` | yes | none | Long random string |
+| `CLIENT_URL` | yes | none | Client address, for example `http://localhost:5173` |
+| `PORT` | no | `5000` | |
+| `NODE_ENV` | no | `development` | Use `production` when deployed |
+| `JWT_EXPIRES_IN` | no | `7d` | Token lifetime |
 
-Never commit `.env`.
+The server stops at start-up with a clear message if a required variable is missing.
+
+Generate a secret:
+```powershell
+node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+```
 
 ## Scripts
-- server: `npm run dev`, `npm start`
-- client: `npm run dev`, `npm run build`
+Client: `npm run dev`, `npm run build`, `npm run lint`.
 
-## Status
-See `phase.md`.
+## Making an admin
+There is no sign-up for admins. Register a normal account, open MongoDB Compass, find the user in the `users` collection and set `role` to `"admin"`. Log in again.
+
+## Testing the API in Postman
+Always use body type raw with JSON. Login is single-device: if the account is already logged in somewhere, `/api/auth/login` returns 409 with a `confirmToken`. Send that token to `/api/auth/login/confirm` to continue. The other device is logged out. This is expected.
+
+## Deployment notes
+- Set `NODE_ENV=production`. The cookie then uses `sameSite: "none"`, so serve over HTTPS.
+- If the client and API are on different sites, use the same parent domain or add CSRF protection.
+- The mini project editor loads Monaco from a CDN, so it needs internet.
+
+## Known limits
+See `docs/prd.md`.
