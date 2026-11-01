@@ -68,3 +68,22 @@ export const resetPasswordRules = [
     .withMessage("Password must contain a letter and a number"),
   required("confirmPassword", "Confirm password"),
 ];
+
+export const profileRules = [
+  required("fullName", "Full name")
+    .trim()
+    .isLength({ min: 2, max: 60 })
+    .withMessage("Full name must be 2 to 60 characters"),
+];
+
+export const changePasswordRules = [
+  required("currentPassword", "Current password")
+    .notEmpty()
+    .withMessage("Current password is required"),
+  required("password", "Password")
+    .isLength({ min: 8, max: 72 })
+    .withMessage("Password must be 8 to 72 characters")
+    .matches(/^(?=.*[A-Za-z])(?=.*\d)/)
+    .withMessage("Password must contain a letter and a number"),
+  required("confirmPassword", "Confirm password"),
+];

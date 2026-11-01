@@ -88,9 +88,7 @@ export const logout = asyncHandler(async (req, res) => {
         { $unset: { activeSession: "" } },
       );
       if (result.modifiedCount > 0) await closeRunningInterview(payload.sub);
-    } catch {
-      // invalid or expired token: there is no session to end
-    }
+    } catch {}
   }
 
   clearSessionCookie(res);
@@ -116,7 +114,6 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   const user = await findUserByEmail(req.body.email);
   const { otp, expiresAt } = await issueOtp(user);
 
-  // OTP is returned because there is no mail service. Remove `otp` here once email is added.
   res.json({
     success: true,
     otp,
@@ -145,4 +142,32 @@ export const resetPassword = asyncHandler(async (req, res) => {
   await closeRunningInterview(user._id);
   clearSessionCookie(res);
   res.json({ success: true, message: "Password updated. Please login" });
+});
+
+export const updateProfile = asyncHandler(async (req, res) => {
+  const user = await User.findByIdAndUpdate(
+    req.user._id,
+    { fullName: req.body.fullName },
+    { new: true, runValidators: true },
+  );
+
+  res.json({ success: true, user });
+});
+
+export const changePassword = asyncHandler(async (req, res) => {
+  const { currentPassword, password, confirmPassword } = req.body;
+  if (password !== confirmPassword)
+    throw new ApiError(400, "Passwords do not match");
+
+  const user = await User.findById(req.user._id).select("+passwordHash");
+  const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!isMatch)
+    throw new ApiError(400, "Current password is incorrect", "WRONG_PASSWORD");
+  if (currentPassword === password)
+    throw new ApiError(400, "New password must be different");
+
+  user.passwordHash = await bcrypt.hash(password, 12);
+  await user.save({ validateBeforeSave: false });
+
+  res.json({ success: true, message: "Password updated" });
 });

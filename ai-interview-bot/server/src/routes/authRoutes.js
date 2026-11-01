@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  changePassword,
   confirmLogin,
   forgotPassword,
   getMe,
@@ -7,15 +8,18 @@ import {
   logout,
   register,
   resetPassword,
+  updateProfile,
   verifyResetOtp,
 } from "../controllers/authController.js";
 import { protect } from "../middlewares/auth.js";
 import { authLimiter } from "../middlewares/rateLimit.js";
 import { validate } from "../middlewares/validate.js";
 import {
+  changePasswordRules,
   confirmRules,
   forgotPasswordRules,
   loginRules,
+  profileRules,
   registerRules,
   resetPasswordRules,
   verifyOtpRules,
@@ -34,6 +38,15 @@ router.post(
 );
 router.post("/logout", logout);
 router.get("/me", protect, getMe);
+router.patch("/profile", protect, profileRules, validate, updateProfile);
+router.patch(
+  "/password",
+  protect,
+  authLimiter,
+  changePasswordRules,
+  validate,
+  changePassword,
+);
 router.post(
   "/forgot-password",
   authLimiter,
