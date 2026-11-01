@@ -154,6 +154,11 @@ const Login = () => {
           onChange={handleChange}
           className={`${inputClass} mt-1`}
         />
+        <div className="mt-2 text-right">
+          <Link to="/forgot-password" className="text-sm text-accent">
+            Forgot password?
+          </Link>
+        </div>
 
         {error && (
           <p role="alert" className="mt-4 text-sm text-danger">

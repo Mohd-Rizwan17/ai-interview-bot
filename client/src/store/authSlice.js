@@ -60,6 +60,42 @@ export const confirmLogin = createAsyncThunk(
   },
 );
 
+export const forgotPassword = createAsyncThunk(
+  "auth/forgotPassword",
+  async (email, { rejectWithValue }) => {
+    try {
+      const { data } = await api.post("/auth/forgot-password", { email });
+      return data;
+    } catch (error) {
+      return rejectWithValue(toRejection(error));
+    }
+  },
+);
+
+export const verifyResetOtp = createAsyncThunk(
+  "auth/verifyResetOtp",
+  async (payload, { rejectWithValue }) => {
+    try {
+      const { data } = await api.post("/auth/verify-otp", payload);
+      return data;
+    } catch (error) {
+      return rejectWithValue(toRejection(error));
+    }
+  },
+);
+
+export const resetPassword = createAsyncThunk(
+  "auth/resetPassword",
+  async (payload, { rejectWithValue }) => {
+    try {
+      const { data } = await api.post("/auth/reset-password", payload);
+      return data;
+    } catch (error) {
+      return rejectWithValue(toRejection(error));
+    }
+  },
+);
+
 export const logoutUser = createAsyncThunk("auth/logout", async () => {
   await api.post("/auth/logout");
 });

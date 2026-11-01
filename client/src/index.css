@@ -299,6 +299,17 @@ body::before {
   }
 }
 
+@keyframes glow-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 0%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 22px 4px
+      color-mix(in srgb, var(--color-accent) 55%, transparent);
+  }
+}
+
 .modal {
   background-color: var(--panel-solid);
   animation: modal-in 200ms ease-out;
@@ -369,6 +380,10 @@ body::before {
   animation: tick-pop 200ms ease-out;
 }
 
+.glow-pulse {
+  animation: glow-pulse 1.4s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -407,6 +422,12 @@ body::before {
 
   .timer-pulse {
     animation: none;
+  }
+
+    .glow-pulse {
+    animation: none;
+    box-shadow: 0 0 16px 2px
+      color-mix(in srgb, var(--color-accent) 45%, transparent);
   }
 
   .modal::backdrop {
