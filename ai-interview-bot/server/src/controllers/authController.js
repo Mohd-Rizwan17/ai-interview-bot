@@ -11,6 +11,12 @@ import {
   isCurrentDevice,
   startSession,
 } from "../services/sessionService.js";
+import {
+  OTP_TTL_SECONDS,
+  getVerifiedResetUser,
+  issueOtp,
+  verifyOtp,
+} from "../services/passwordResetService.js";
 
 export const register = asyncHandler(async (req, res) => {
   const { fullName, username, email, password, confirmPassword } = req.body;
@@ -94,3 +100,49 @@ export const logout = asyncHandler(async (req, res) => {
 export const getMe = (req, res) => {
   res.json({ success: true, user: req.user });
 };
+
+const findUserByEmail = async (rawEmail) => {
+  const user = await User.findOne({ email: rawEmail.toLowerCase().trim() });
+  if (!user)
+    throw new ApiError(
+      404,
+      "No account found with this email",
+      "EMAIL_NOT_FOUND",
+    );
+  return user;
+};
+
+export const forgotPassword = asyncHandler(async (req, res) => {
+  const user = await findUserByEmail(req.body.email);
+  const { otp, expiresAt } = await issueOtp(user);
+
+  // OTP is returned because there is no mail service. Remove `otp` here once email is added.
+  res.json({
+    success: true,
+    otp,
+    expiresAt,
+    expiresInSeconds: OTP_TTL_SECONDS,
+  });
+});
+
+export const verifyResetOtp = asyncHandler(async (req, res) => {
+  const user = await findUserByEmail(req.body.email);
+  const resetToken = await verifyOtp(user, req.body.otp);
+  res.json({ success: true, resetToken });
+});
+
+export const resetPassword = asyncHandler(async (req, res) => {
+  const { resetToken, password, confirmPassword } = req.body;
+  if (password !== confirmPassword)
+    throw new ApiError(400, "Passwords do not match");
+
+  const user = await getVerifiedResetUser(resetToken);
+  user.passwordHash = await bcrypt.hash(password, 12);
+  user.passwordReset = undefined;
+  user.activeSession = undefined;
+  await user.save({ validateBeforeSave: false });
+
+  await closeRunningInterview(user._id);
+  clearSessionCookie(res);
+  res.json({ success: true, message: "Password updated. Please login" });
+});

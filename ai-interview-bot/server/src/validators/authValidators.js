@@ -40,3 +40,31 @@ export const loginRules = [
 export const confirmRules = [
   required("confirmToken", "Confirmation token").notEmpty(),
 ];
+
+export const forgotPasswordRules = [
+  required("email", "Email")
+    .trim()
+    .isEmail()
+    .withMessage("Enter a valid email"),
+];
+
+export const verifyOtpRules = [
+  required("email", "Email")
+    .trim()
+    .isEmail()
+    .withMessage("Enter a valid email"),
+  required("otp", "OTP")
+    .trim()
+    .matches(/^\d{6}$/)
+    .withMessage("OTP must be 6 digits"),
+];
+
+export const resetPasswordRules = [
+  required("resetToken", "Reset token").notEmpty(),
+  required("password", "Password")
+    .isLength({ min: 8, max: 72 })
+    .withMessage("Password must be 8 to 72 characters")
+    .matches(/^(?=.*[A-Za-z])(?=.*\d)/)
+    .withMessage("Password must contain a letter and a number"),
+  required("confirmPassword", "Confirm password"),
+];

@@ -36,6 +36,12 @@ const userSchema = new mongoose.Schema(
       lastActiveAt: Date,
       expiresAt: Date,
     },
+    passwordReset: {
+      otpHash: String,
+      expiresAt: Date,
+      attempts: Number,
+      verified: Boolean,
+    },
   },
   {
     timestamps: true,
@@ -43,6 +49,7 @@ const userSchema = new mongoose.Schema(
       transform: (doc, ret) => {
         delete ret.passwordHash;
         delete ret.activeSession;
+        delete ret.passwordReset;
         delete ret.__v;
         return ret;
       },
