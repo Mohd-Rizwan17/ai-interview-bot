@@ -96,6 +96,30 @@ export const resetPassword = createAsyncThunk(
   },
 );
 
+export const updateProfile = createAsyncThunk(
+  "auth/updateProfile",
+  async (fullName, { rejectWithValue }) => {
+    try {
+      const { data } = await api.patch("/auth/profile", { fullName });
+      return data.user;
+    } catch (error) {
+      return rejectWithValue(toRejection(error));
+    }
+  },
+);
+
+export const changePassword = createAsyncThunk(
+  "auth/changePassword",
+  async (payload, { rejectWithValue }) => {
+    try {
+      const { data } = await api.patch("/auth/password", payload);
+      return data;
+    } catch (error) {
+      return rejectWithValue(toRejection(error));
+    }
+  },
+);
+
 export const logoutUser = createAsyncThunk("auth/logout", async () => {
   await api.post("/auth/logout");
 });
@@ -135,6 +159,9 @@ const authSlice = createSlice({
       .addCase(fetchMe.rejected, (state) => {
         state.user = null;
         state.checked = true;
+      })
+      .addCase(updateProfile.fulfilled, (state, action) => {
+        state.user = action.payload;
       })
       .addMatcher(
         isAnyOf(loginUser.pending, registerUser.pending, confirmLogin.pending),

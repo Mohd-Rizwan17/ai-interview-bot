@@ -5,6 +5,7 @@ import { Outlet, useLocation, useNavigate } from "react-router";
 import AdminNav from "../components/AdminNav.jsx";
 import Avatar from "../components/Avatar.jsx";
 import ProductTour from "../components/ProductTour.jsx";
+import ProfileModal from "../components/ProfileModal.jsx";
 import UserNav from "../components/UserNav.jsx";
 import { logoutUser } from "../store/authSlice.js";
 import { hasSeenTour, markTourSeen } from "../utils/tourStorage.js";
@@ -18,6 +19,7 @@ const AppShell = () => {
   const location = useLocation();
   const user = useSelector((state) => state.auth.user);
   const [isTourOpen, setIsTourOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [menuPath, setMenuPath] = useState(null);
   const isAdmin = user.role === "admin";
   const firstName = user.fullName.split(" ")[0];
@@ -26,6 +28,11 @@ const AppShell = () => {
 
   const openMenu = () => setMenuPath(location.pathname);
   const closeMenu = useCallback(() => setMenuPath(null), []);
+
+  const openProfile = () => {
+    closeMenu();
+    setIsProfileOpen(true);
+  };
 
   useEffect(() => {
     if (!isMenuOpen) return undefined;
@@ -84,9 +91,14 @@ const AppShell = () => {
           className="h-6 w-6 shrink-0 rounded-md bg-accent"
         />
         <p className="truncate text-sm font-semibold">AI Interview Bot</p>
-        <span className="ml-auto">
+        <button
+          type="button"
+          aria-label="Open profile"
+          onClick={openProfile}
+          className="ml-auto rounded-full"
+        >
           <Avatar name={firstName} online />
-        </span>
+        </button>
       </header>
 
       {isMenuOpen && (
@@ -138,10 +150,15 @@ const AppShell = () => {
             </button>
           )}
           <div className="flex items-center justify-between gap-2">
-            <div className="flex min-w-0 items-center gap-3">
+            <button
+              type="button"
+              title="View and edit profile"
+              onClick={openProfile}
+              className="flex min-w-0 items-center gap-3 rounded-md text-left hover:opacity-80"
+            >
               <Avatar name={firstName} online />
               <p className="truncate text-sm">{firstName}</p>
-            </div>
+            </button>
             <button
               type="button"
               onClick={() => dispatch(logoutUser())}
@@ -161,6 +178,9 @@ const AppShell = () => {
       </div>
 
       {!isAdmin && isTourOpen && <ProductTour onClose={closeTour} />}
+      {isProfileOpen && (
+        <ProfileModal onClose={() => setIsProfileOpen(false)} />
+      )}
     </div>
   );
 };
