@@ -17,14 +17,35 @@ import {
   issueOtp,
   verifyOtp,
 } from "../services/passwordResetService.js";
+import {
+  assertAnswerVerified,
+  getQuestionKey,
+  hashAnswer,
+  verifyAnswer,
+} from "../services/securityService.js";
 
 export const register = asyncHandler(async (req, res) => {
-  const { fullName, username, email, password, confirmPassword } = req.body;
+  const {
+    fullName,
+    username,
+    email,
+    password,
+    confirmPassword,
+    securityQuestion,
+    securityAnswer,
+  } = req.body;
   if (password !== confirmPassword)
     throw new ApiError(400, "Passwords do not match");
 
   const passwordHash = await bcrypt.hash(password, 12);
-  const user = await User.create({ fullName, username, email, passwordHash });
+  const answerHash = await hashAnswer(securityAnswer);
+  const user = await User.create({
+    fullName,
+    username,
+    email,
+    passwordHash,
+    security: { question: securityQuestion, answerHash },
+  });
   await startSession(user, req, res);
 
   res.status(201).json({ success: true, user });
@@ -99,8 +120,11 @@ export const getMe = (req, res) => {
   res.json({ success: true, user: req.user });
 };
 
-const findUserByEmail = async (rawEmail) => {
-  const user = await User.findOne({ email: rawEmail.toLowerCase().trim() });
+const findUserByEmail = async (rawEmail, { withAnswer = false } = {}) => {
+  const query = User.findOne({ email: rawEmail.toLowerCase().trim() });
+  if (withAnswer) query.select("+security.answerHash");
+
+  const user = await query;
   if (!user)
     throw new ApiError(
       404,
@@ -110,8 +134,20 @@ const findUserByEmail = async (rawEmail) => {
   return user;
 };
 
+export const getSecurityQuestion = asyncHandler(async (req, res) => {
+  const user = await findUserByEmail(req.body.email);
+  res.json({ success: true, question: getQuestionKey(user) });
+});
+
+export const checkSecurityAnswer = asyncHandler(async (req, res) => {
+  const user = await findUserByEmail(req.body.email, { withAnswer: true });
+  const answerToken = await verifyAnswer(user, req.body.answer);
+  res.json({ success: true, answerToken });
+});
+
 export const forgotPassword = asyncHandler(async (req, res) => {
   const user = await findUserByEmail(req.body.email);
+  assertAnswerVerified(user, req.body.answerToken);
   const { otp, expiresAt } = await issueOtp(user);
 
   res.json({

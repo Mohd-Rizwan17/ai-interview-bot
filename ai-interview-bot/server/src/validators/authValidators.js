@@ -1,4 +1,5 @@
 import { body } from "express-validator";
+import { SECURITY_QUESTION_KEYS } from "../constants/security.js";
 
 const required = (field, label) =>
   body(field).isString().withMessage(`${label} is required`).bail();
@@ -25,6 +26,13 @@ export const registerRules = [
     .matches(/^(?=.*[A-Za-z])(?=.*\d)/)
     .withMessage("Password must contain a letter and a number"),
   required("confirmPassword", "Confirm password"),
+  required("securityQuestion", "Security question")
+    .isIn(SECURITY_QUESTION_KEYS)
+    .withMessage("Choose a valid security question"),
+  required("securityAnswer", "Security answer")
+    .trim()
+    .isLength({ min: 2, max: 60 })
+    .withMessage("Security answer must be 2 to 60 characters"),
 ];
 
 export const loginRules = [
@@ -41,11 +49,32 @@ export const confirmRules = [
   required("confirmToken", "Confirmation token").notEmpty(),
 ];
 
+export const securityQuestionRules = [
+  required("email", "Email")
+    .trim()
+    .isEmail()
+    .withMessage("Enter a valid email"),
+];
+
+export const securityAnswerRules = [
+  required("email", "Email")
+    .trim()
+    .isEmail()
+    .withMessage("Enter a valid email"),
+  required("answer", "Security answer")
+    .trim()
+    .isLength({ min: 2, max: 60 })
+    .withMessage("Enter your security answer"),
+];
+
 export const forgotPasswordRules = [
   required("email", "Email")
     .trim()
     .isEmail()
     .withMessage("Enter a valid email"),
+  required("answerToken", "Security check")
+    .notEmpty()
+    .withMessage("Security check is required"),
 ];
 
 export const verifyOtpRules = [

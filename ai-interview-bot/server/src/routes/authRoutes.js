@@ -1,9 +1,11 @@
 import { Router } from "express";
 import {
   changePassword,
+  checkSecurityAnswer,
   confirmLogin,
   forgotPassword,
   getMe,
+  getSecurityQuestion,
   login,
   logout,
   register,
@@ -22,6 +24,8 @@ import {
   profileRules,
   registerRules,
   resetPasswordRules,
+  securityAnswerRules,
+  securityQuestionRules,
   verifyOtpRules,
 } from "../validators/authValidators.js";
 
@@ -46,6 +50,20 @@ router.patch(
   changePasswordRules,
   validate,
   changePassword,
+);
+router.post(
+  "/forgot-password/question",
+  authLimiter,
+  securityQuestionRules,
+  validate,
+  getSecurityQuestion,
+);
+router.post(
+  "/forgot-password/answer",
+  authLimiter,
+  securityAnswerRules,
+  validate,
+  checkSecurityAnswer,
 );
 router.post(
   "/forgot-password",

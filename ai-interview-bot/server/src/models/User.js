@@ -4,6 +4,7 @@ import {
   RETENTION_OPTIONS,
   USER_ROLES,
 } from "../constants/interview.js";
+import { SECURITY_QUESTION_KEYS } from "../constants/security.js";
 
 const userSchema = new mongoose.Schema(
   {
@@ -25,6 +26,12 @@ const userSchema = new mongoose.Schema(
     phone: { type: String, trim: true },
     role: { type: String, enum: USER_ROLES, default: "user" },
     passwordHash: { type: String, required: true, select: false },
+    security: {
+      question: { type: String, enum: SECURITY_QUESTION_KEYS },
+      answerHash: { type: String, select: false },
+      attempts: Number,
+      lockedUntil: Date,
+    },
     historyRetentionDays: {
       type: Number,
       enum: RETENTION_OPTIONS,
@@ -48,6 +55,7 @@ const userSchema = new mongoose.Schema(
     toJSON: {
       transform: (doc, ret) => {
         delete ret.passwordHash;
+        delete ret.security;
         delete ret.activeSession;
         delete ret.passwordReset;
         delete ret.__v;
