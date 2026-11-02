@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, Navigate } from "react-router";
 import { clearAuthError, registerUser } from "../store/authSlice.js";
 import ProximityText from "../components/ProximityText.jsx";
+import SecurityQuestionField from "../components/SecurityQuestionField.jsx";
 import useCardSlide from "../hooks/useCardSlide.js";
 
 const inputClass =
@@ -42,6 +43,8 @@ const Register = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    securityQuestion: "",
+    securityAnswer: "",
   });
   const isLoading = status === "loading";
   const cardRef = useCardSlide();
@@ -54,6 +57,14 @@ const Register = () => {
 
   const handleChange = (event) => {
     setForm({ ...form, [event.target.name]: event.target.value });
+  };
+
+  const handleQuestionChange = (event) => {
+    setForm({
+      ...form,
+      securityQuestion: event.target.value,
+      securityAnswer: "",
+    });
   };
 
   const handleSubmit = (event) => {
@@ -98,6 +109,13 @@ const Register = () => {
             )}
           </div>
         ))}
+
+        <SecurityQuestionField
+          question={form.securityQuestion}
+          answer={form.securityAnswer}
+          onQuestionChange={handleQuestionChange}
+          onAnswerChange={handleChange}
+        />
 
         {error && (
           <p role="alert" className="mt-4 text-sm text-danger">
