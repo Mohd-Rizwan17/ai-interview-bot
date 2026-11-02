@@ -2,7 +2,10 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { Link } from "react-router";
 import OtpModal from "../components/OtpModal.jsx";
+import { getQuestionLabel } from "../constants/securityQuestions.js";
 import {
+  checkSecurityAnswer,
+  fetchSecurityQuestion,
   forgotPassword,
   resetPassword,
   verifyResetOtp,
@@ -15,15 +18,28 @@ const ForgotPassword = () => {
   const dispatch = useDispatch();
   const [step, setStep] = useState("email");
   const [email, setEmail] = useState("");
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState("");
+  const [answerToken, setAnswerToken] = useState("");
   const [otpData, setOtpData] = useState(null);
   const [resetToken, setResetToken] = useState("");
   const [form, setForm] = useState({ password: "", confirmPassword: "" });
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
 
-  const sendOtp = async () => {
-    const data = await dispatch(forgotPassword(email.trim())).unwrap();
+  const sendOtp = async (token) => {
+    const data = await dispatch(
+      forgotPassword({ email: email.trim(), answerToken: token }),
+    ).unwrap();
     setOtpData(data);
+  };
+
+  const backToEmail = () => {
+    setStep("email");
+    setQuestion("");
+    setAnswer("");
+    setAnswerToken("");
+    setError(null);
   };
 
   const verifyOtp = async (otp) => {
@@ -36,13 +52,47 @@ const ForgotPassword = () => {
     setStep("password");
   };
 
+  const handleResend = async () => {
+    try {
+      await sendOtp(answerToken);
+    } catch (rejection) {
+      if (rejection.code !== "SECURITY_EXPIRED") throw rejection;
+
+      setOtpData(null);
+      setAnswer("");
+      setAnswerToken("");
+      setError(rejection.message);
+      setStep("question");
+    }
+  };
+
   const handleEmailSubmit = async (event) => {
     event.preventDefault();
     setBusy(true);
     setError(null);
 
     try {
-      await sendOtp();
+      const data = await dispatch(fetchSecurityQuestion(email.trim())).unwrap();
+      setQuestion(data.question);
+      setStep("question");
+    } catch (rejection) {
+      setError(rejection.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleAnswerSubmit = async (event) => {
+    event.preventDefault();
+    setBusy(true);
+    setError(null);
+
+    try {
+      const data = await dispatch(
+        checkSecurityAnswer({ email: email.trim(), answer }),
+      ).unwrap();
+      setAnswerToken(data.answerToken);
+      await sendOtp(data.answerToken);
     } catch (rejection) {
       setError(rejection.message);
     } finally {
@@ -83,7 +133,7 @@ const ForgotPassword = () => {
           <form onSubmit={handleEmailSubmit}>
             <h1 className="text-2xl font-semibold">Forgot password</h1>
             <p className="mt-1 text-sm text-muted">
-              Enter your registered email to get a 6 digit OTP.
+              Enter your registered email to continue.
             </p>
 
             <label htmlFor="email" className="mt-6 block text-sm text-muted">
@@ -111,13 +161,65 @@ const ForgotPassword = () => {
               disabled={busy}
               className="mt-6 w-full rounded-md bg-accent px-4 py-2 font-semibold text-ground disabled:opacity-60"
             >
-              {busy ? "Sending..." : "Send OTP"}
+              {busy ? "Checking..." : "Continue"}
             </button>
 
             <p className="mt-4 text-center text-sm text-muted">
               <Link to="/login" className="text-accent">
                 Back to login
               </Link>
+            </p>
+          </form>
+        )}
+
+        {step === "question" && (
+          <form onSubmit={handleAnswerSubmit}>
+            <h1 className="text-2xl font-semibold">Security check</h1>
+            <p className="mt-1 text-sm text-muted">
+              Answer your security question for {email.trim()}.
+            </p>
+
+            <p className="mt-6 text-sm text-muted">Your question</p>
+            <p className="mt-1 font-medium">{getQuestionLabel(question)}</p>
+
+            <label htmlFor="answer" className="mt-4 block text-sm text-muted">
+              Your answer
+            </label>
+            <input
+              id="answer"
+              name="answer"
+              type="text"
+              autoComplete="off"
+              required
+              minLength={2}
+              maxLength={60}
+              value={answer}
+              onChange={(event) => setAnswer(event.target.value)}
+              className={`${inputClass} mt-1`}
+            />
+
+            {error && (
+              <p role="alert" className="mt-4 text-sm text-danger">
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={busy}
+              className="mt-6 w-full rounded-md bg-accent px-4 py-2 font-semibold text-ground disabled:opacity-60"
+            >
+              {busy ? "Checking..." : "Verify answer"}
+            </button>
+
+            <p className="mt-4 text-center text-sm text-muted">
+              <button
+                type="button"
+                onClick={backToEmail}
+                className="text-accent"
+              >
+                Use a different email
+              </button>
             </p>
           </form>
         )}
@@ -201,7 +303,7 @@ const ForgotPassword = () => {
           otp={otpData.otp}
           expiresInSeconds={otpData.expiresInSeconds}
           onVerify={verifyOtp}
-          onResend={sendOtp}
+          onResend={handleResend}
           onClose={() => setOtpData(null)}
         />
       )}
