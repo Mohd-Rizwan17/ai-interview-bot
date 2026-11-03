@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { Link } from "react-router";
+import ConfirmModal from "../components/ConfirmModal.jsx";
 import OtpModal from "../components/OtpModal.jsx";
 import { getQuestionLabel } from "../constants/securityQuestions.js";
 import {
@@ -26,6 +27,7 @@ const ForgotPassword = () => {
   const [form, setForm] = useState({ password: "", confirmPassword: "" });
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const sendOtp = async (token) => {
     const data = await dispatch(
@@ -104,7 +106,7 @@ const ForgotPassword = () => {
     setForm({ ...form, [event.target.name]: event.target.value });
   };
 
-  const handleResetSubmit = async (event) => {
+  const handleResetSubmit = (event) => {
     event.preventDefault();
     setError(null);
 
@@ -113,6 +115,10 @@ const ForgotPassword = () => {
       return;
     }
 
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmSave = async () => {
     setBusy(true);
 
     try {
@@ -123,6 +129,7 @@ const ForgotPassword = () => {
       if (rejection.code === "RESET_EXPIRED") setStep("email");
     } finally {
       setBusy(false);
+      setConfirmOpen(false);
     }
   };
 
@@ -305,6 +312,17 @@ const ForgotPassword = () => {
           onVerify={verifyOtp}
           onResend={handleResend}
           onClose={() => setOtpData(null)}
+        />
+      )}
+
+      {confirmOpen && (
+        <ConfirmModal
+          title="Are you sure?"
+          message="Do you want to save this password? Any other logged in device will be logged out."
+          confirmLabel="Save password"
+          busy={busy}
+          onConfirm={handleConfirmSave}
+          onCancel={() => setConfirmOpen(false)}
         />
       )}
     </main>
