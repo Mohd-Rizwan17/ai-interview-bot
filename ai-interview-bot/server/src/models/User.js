@@ -30,7 +30,9 @@ const userSchema = new mongoose.Schema(
       question: { type: String, enum: SECURITY_QUESTION_KEYS },
       answerHash: { type: String, select: false },
       attempts: Number,
+      lockCount: Number,
       lockedUntil: Date,
+      lastFailedAt: Date,
     },
     historyRetentionDays: {
       type: Number,

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import { Link } from "react-router";
 import ConfirmModal from "../components/ConfirmModal.jsx";
@@ -15,6 +15,9 @@ import {
 const inputClass =
   "w-full rounded-md border border-line bg-ground/40 px-3 py-2 text-ink placeholder:text-muted";
 
+const formatCountdown = (seconds) =>
+  `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
+
 const ForgotPassword = () => {
   const dispatch = useDispatch();
   const [step, setStep] = useState("email");
@@ -28,6 +31,31 @@ const ForgotPassword = () => {
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [lockSeconds, setLockSeconds] = useState(0);
+  const lockEndsAt = useRef(0);
+  const isLocked = lockSeconds > 0;
+
+  useEffect(() => {
+    if (!isLocked) return undefined;
+
+    const id = setInterval(() => {
+      const left = Math.max(
+        0,
+        Math.ceil((lockEndsAt.current - Date.now()) / 1000),
+      );
+      setLockSeconds(left);
+      if (left === 0) setError(null);
+    }, 1000);
+
+    return () => clearInterval(id);
+  }, [isLocked]);
+
+  const startLock = (seconds, message) => {
+    lockEndsAt.current = Date.now() + seconds * 1000;
+    setLockSeconds(seconds);
+    setAnswer("");
+    setError(message);
+  };
 
   const sendOtp = async (token) => {
     const data = await dispatch(
@@ -37,6 +65,7 @@ const ForgotPassword = () => {
   };
 
   const backToEmail = () => {
+    setLockSeconds(0);
     setStep("email");
     setQuestion("");
     setAnswer("");
@@ -77,6 +106,11 @@ const ForgotPassword = () => {
       const data = await dispatch(fetchSecurityQuestion(email.trim())).unwrap();
       setQuestion(data.question);
       setStep("question");
+      if (data.retryAfterSeconds > 0)
+        startLock(
+          data.retryAfterSeconds,
+          "Too many wrong answers. Please wait for the timer to finish.",
+        );
     } catch (rejection) {
       setError(rejection.message);
     } finally {
@@ -96,7 +130,9 @@ const ForgotPassword = () => {
       setAnswerToken(data.answerToken);
       await sendOtp(data.answerToken);
     } catch (rejection) {
-      setError(rejection.message);
+      if (rejection.code === "SECURITY_LOCKED")
+        startLock(rejection.retryAfterSeconds, rejection.message);
+      else setError(rejection.message);
     } finally {
       setBusy(false);
     }
@@ -189,9 +225,19 @@ const ForgotPassword = () => {
             <p className="mt-6 text-sm text-muted">Your question</p>
             <p className="mt-1 font-medium">{getQuestionLabel(question)}</p>
 
-            <label htmlFor="answer" className="mt-4 block text-sm text-muted">
-              Your answer
-            </label>
+            <div className="mt-4 flex items-center justify-between">
+              <label htmlFor="answer" className="block text-sm text-muted">
+                Your answer
+              </label>
+              {isLocked && (
+                <span
+                  role="timer"
+                  className="rounded-full border border-danger px-2 py-0.5 font-mono text-xs text-danger"
+                >
+                  {formatCountdown(lockSeconds)}
+                </span>
+              )}
+            </div>
             <input
               id="answer"
               name="answer"
@@ -200,9 +246,11 @@ const ForgotPassword = () => {
               required
               minLength={2}
               maxLength={60}
+              disabled={isLocked}
+              placeholder={isLocked ? "Locked. Wait for the timer" : undefined}
               value={answer}
               onChange={(event) => setAnswer(event.target.value)}
-              className={`${inputClass} mt-1`}
+              className={`${inputClass} mt-1 disabled:cursor-not-allowed disabled:opacity-50`}
             />
 
             {error && (
@@ -213,7 +261,7 @@ const ForgotPassword = () => {
 
             <button
               type="submit"
-              disabled={busy}
+              disabled={busy || isLocked}
               className="mt-6 w-full rounded-md bg-accent px-4 py-2 font-semibold text-ground disabled:opacity-60"
             >
               {busy ? "Checking..." : "Verify answer"}

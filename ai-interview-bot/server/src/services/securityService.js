@@ -5,6 +5,7 @@ import {
   ANSWER_TOKEN_TTL,
   MAX_SECURITY_ATTEMPTS,
   SECURITY_LOCK_MINUTES,
+  SECURITY_RESET_HOURS,
 } from "../constants/security.js";
 import { ApiError } from "../utils/ApiError.js";
 
@@ -22,6 +23,17 @@ const normalizeAnswer = (answer) =>
     .replace(/\s+/g, " ")
     .trim();
 
+const formatWait = (seconds) => {
+  if (seconds < 60) return `${seconds} seconds`;
+  const minutes = Math.ceil(seconds / 60);
+  return `${minutes} ${minutes === 1 ? "minute" : "minutes"}`;
+};
+
+const lockedResult = (seconds) => ({
+  retryAfterSeconds: seconds,
+  message: `Too many wrong answers. Try again in ${formatWait(seconds)}`,
+});
+
 export const hashAnswer = async (answer) => {
   const normalized = normalizeAnswer(answer);
   if (normalized.length < 2)
@@ -37,17 +49,26 @@ export const getQuestionKey = (user) => {
   return user.security.question;
 };
 
+export const getLockSeconds = (user) => {
+  const lockedUntil = user.security?.lockedUntil;
+  if (!lockedUntil) return 0;
+  return Math.max(0, Math.ceil((lockedUntil - Date.now()) / 1000));
+};
+
 export const verifyAnswer = async (user, answer) => {
   const security = user.security;
   if (!security?.answerHash) throw noSecurity();
 
-  if (security.lockedUntil && security.lockedUntil > new Date()) {
-    const minutes = Math.ceil((security.lockedUntil - Date.now()) / 60000);
-    throw new ApiError(
-      429,
-      `Too many wrong answers. Try again in ${minutes} minutes`,
-      "SECURITY_LOCKED",
-    );
+  const lockSeconds = getLockSeconds(user);
+  if (lockSeconds > 0) return lockedResult(lockSeconds);
+
+  const staleAfterMs = SECURITY_RESET_HOURS * 60 * 60 * 1000;
+  if (
+    security.lastFailedAt &&
+    Date.now() - security.lastFailedAt > staleAfterMs
+  ) {
+    security.attempts = 0;
+    security.lockCount = 0;
   }
 
   const isMatch = await bcrypt.compare(
@@ -57,34 +78,43 @@ export const verifyAnswer = async (user, answer) => {
 
   if (!isMatch) {
     const attempts = (security.attempts ?? 0) + 1;
-    if (attempts >= MAX_SECURITY_ATTEMPTS) {
-      security.attempts = 0;
-      security.lockedUntil = new Date(
-        Date.now() + SECURITY_LOCK_MINUTES * 60 * 1000,
-      );
-      await user.save({ validateBeforeSave: false });
-      throw new ApiError(
-        429,
-        `Too many wrong answers. Try again in ${SECURITY_LOCK_MINUTES} minutes`,
-        "SECURITY_LOCKED",
-      );
-    }
     security.attempts = attempts;
+    security.lastFailedAt = new Date();
+
+    if (attempts >= MAX_SECURITY_ATTEMPTS) {
+      const lockCount = security.lockCount ?? 0;
+      const minutes =
+        SECURITY_LOCK_MINUTES[
+          Math.min(lockCount, SECURITY_LOCK_MINUTES.length - 1)
+        ];
+      security.lockCount = lockCount + 1;
+      security.lockedUntil = new Date(Date.now() + minutes * 60 * 1000);
+      await user.save({ validateBeforeSave: false });
+      return lockedResult(minutes * 60);
+    }
+
     await user.save({ validateBeforeSave: false });
+    const left = MAX_SECURITY_ATTEMPTS - attempts;
     throw new ApiError(
       400,
-      `Wrong answer. ${MAX_SECURITY_ATTEMPTS - attempts} attempts left`,
+      `Wrong answer. ${left} ${left === 1 ? "attempt" : "attempts"} left`,
       "SECURITY_INVALID",
     );
   }
 
   security.attempts = 0;
+  security.lockCount = 0;
   security.lockedUntil = undefined;
+  security.lastFailedAt = undefined;
   await user.save({ validateBeforeSave: false });
 
-  return jwt.sign({ sub: user.id, purpose: "security-answer" }, env.jwtSecret, {
-    expiresIn: ANSWER_TOKEN_TTL,
-  });
+  return {
+    answerToken: jwt.sign(
+      { sub: user.id, purpose: "security-answer" },
+      env.jwtSecret,
+      { expiresIn: ANSWER_TOKEN_TTL },
+    ),
+  };
 };
 
 export const assertAnswerVerified = (user, answerToken) => {

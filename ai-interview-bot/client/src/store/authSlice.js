@@ -9,6 +9,7 @@ const toRejection = (error) => {
     code: data?.code,
     device: data?.device,
     confirmToken: data?.confirmToken,
+    retryAfterSeconds: data?.retryAfterSeconds,
   };
 };
 

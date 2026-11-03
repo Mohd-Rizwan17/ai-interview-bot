@@ -19,6 +19,7 @@ import {
 } from "../services/passwordResetService.js";
 import {
   assertAnswerVerified,
+  getLockSeconds,
   getQuestionKey,
   hashAnswer,
   verifyAnswer,
@@ -136,13 +137,26 @@ const findUserByEmail = async (rawEmail, { withAnswer = false } = {}) => {
 
 export const getSecurityQuestion = asyncHandler(async (req, res) => {
   const user = await findUserByEmail(req.body.email);
-  res.json({ success: true, question: getQuestionKey(user) });
+  res.json({
+    success: true,
+    question: getQuestionKey(user),
+    retryAfterSeconds: getLockSeconds(user),
+  });
 });
 
 export const checkSecurityAnswer = asyncHandler(async (req, res) => {
   const user = await findUserByEmail(req.body.email, { withAnswer: true });
-  const answerToken = await verifyAnswer(user, req.body.answer);
-  res.json({ success: true, answerToken });
+  const result = await verifyAnswer(user, req.body.answer);
+
+  if (result.retryAfterSeconds)
+    return res.status(429).json({
+      success: false,
+      code: "SECURITY_LOCKED",
+      message: result.message,
+      retryAfterSeconds: result.retryAfterSeconds,
+    });
+
+  res.json({ success: true, answerToken: result.answerToken });
 });
 
 export const forgotPassword = asyncHandler(async (req, res) => {
